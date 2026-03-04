@@ -1,0 +1,42 @@
+# 系统文件
+*.DS_Store
+Thumbs.db
+
+# 编译输出目录
+bin/
+target/
+build/
+out/
+
+# IDE文件
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 依赖管理文件
+.m2/
+.gradle/
+gradle-wrapper.jar
+
+# 日志文件
+logs/
+*.log
+
+# 环境变量文件
+.env
+.env.local
+.env.*.local
+
+# 构建工具文件
+*.iml
+*.ipr
+*.iws
+
+# 测试覆盖报告
+coverage/
+
+# 临时文件
+tmp/
+temp/

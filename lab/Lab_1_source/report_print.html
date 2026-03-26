@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab1 实验报告（打印版）- 后缀表达式</title>
+  <style>
+    :root {
+      --ink: #111111;
+      --muted: #444444;
+      --line: #cfcfcf;
+      --bg-soft: #f6f6f6;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      color: var(--ink);
+      background: #ffffff;
+      font-family: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", "SimSun", serif;
+      line-height: 1.5;
+      letter-spacing: normal;
+      word-spacing: normal;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 840px;
+      margin: 0 auto;
+      padding: 14mm 12mm 16mm;
+    }
+
+    .cover {
+      border: 1px solid var(--line);
+      padding: 10mm 9mm;
+      margin-bottom: 8mm;
+    }
+
+    .cover h1 {
+      margin: 0 0 6mm;
+      font-size: 22pt;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .cover h2 {
+      margin: 0 0 10mm;
+      font-size: 15pt;
+      font-weight: normal;
+      text-align: center;
+      color: #222222;
+    }
+
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5pt;
+    }
+
+    .meta-table td {
+      border: 1px solid var(--line);
+      padding: 6px 8px;
+    }
+
+    .meta-table td:first-child {
+      width: 22%;
+      background: var(--bg-soft);
+      font-weight: bold;
+    }
+
+    .toc {
+      border: 1px solid var(--line);
+      padding: 6mm 7mm;
+      margin: 0 0 8mm;
+      background: #fcfcfc;
+      page-break-after: always;
+      break-after: page;
+    }
+
+    .toc h3 {
+      margin: 0 0 4mm;
+      font-size: 14pt;
+    }
+
+    .toc ol {
+      margin: 0;
+      padding-left: 1.2em;
+      font-size: 11pt;
+    }
+
+    .toc li { margin: 2px 0; }
+
+    h2 {
+      font-size: 15pt;
+      margin: 8mm 0 3mm;
+      padding-bottom: 1.5mm;
+      border-bottom: 1px solid var(--line);
+      break-after: avoid-page;
+    }
+
+    h3 {
+      font-size: 12.5pt;
+      margin: 5mm 0 2mm;
+      break-after: avoid-page;
+    }
+
+    p, li, td, th, code, pre {
+      font-size: 10.8pt;
+    }
+
+    p {
+      margin: 2mm 0 2.5mm;
+    }
+
+    ul, ol {
+      margin: 2mm 0 3mm 1.2em;
+      padding: 0;
+    }
+
+    li {
+      margin: 1.2mm 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 3mm 0 4mm;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 5px 6px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: var(--bg-soft);
+      font-weight: bold;
+    }
+
+    pre {
+      margin: 2mm 0 4mm;
+      padding: 7px 8px;
+      border: 1px solid var(--line);
+      background: #f8f8f8;
+      overflow: hidden;
+      white-space: pre-wrap;
+      word-break: break-word;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      font-family: "SFMono-Regular", "Menlo", "Consolas", "Liberation Mono", monospace;
+      line-height: 1.4;
+    }
+
+    code {
+      font-family: "SFMono-Regular", "Menlo", "Consolas", "Liberation Mono", monospace;
+      background: #f5f5f5;
+      border: 1px solid #e2e2e2;
+      padding: 0 3px;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      margin: 2mm 0 4mm;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .kpi {
+      border: 1px solid var(--line);
+      background: #fafafa;
+      padding: 5px 6px;
+    }
+
+    .kpi .k-label {
+      display: block;
+      color: var(--muted);
+      font-size: 9.6pt;
+      margin-bottom: 2px;
+    }
+
+    .kpi .k-value {
+      display: block;
+      font-size: 12pt;
+      font-weight: bold;
+    }
+
+    figure {
+      margin: 2mm 0 4mm;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      padding: 6px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    figure img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    figcaption {
+      margin-top: 4px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 9.8pt;
+    }
+
+    .quote {
+      border-left: 3px solid #777777;
+      background: #f8f8f8;
+      padding: 6px 8px;
+      margin: 2mm 0 4mm;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+    }
+
+    .screen-tip {
+      max-width: 840px;
+      margin: 8px auto 0;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: #333333;
+      background: #fffde8;
+      border: 1px solid #e3dca2;
+    }
+
+    @page {
+      size: A4;
+      margin: 14mm 12mm 16mm;
+    }
+
+    @media print {
+      .page {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .cover {
+        page-break-after: always;
+        break-after: page;
+      }
+
+      .screen-tip {
+        display: none !important;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      /* Chrome print compatibility: avoid relying on unsupported margin-box page counters */
+      .toc {
+        page-break-after: always;
+        break-after: page;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="screen-tip">打印建议：在 Chrome 打印对话框中关闭“页眉和页脚”，开启“背景图形”，纸张选择 A4。</div>
+
+  <div class="page">
+    <section class="cover">
+      <h1>《编译器构造实验》Lab1 实验报告</h1>
+      <h2>后缀表达式（Postfix）</h2>
+      <table class="meta-table">
+        <tr><td>学校</td><td>中山大学计算机学院</td></tr>
+        <tr><td>课程</td><td>编译器构造实验（DCS292）</td></tr>
+        <tr><td>姓名</td><td>梁力航</td></tr>
+        <tr><td>学号</td><td>23336128</td></tr>
+        <tr><td>日期</td><td>2026-03-26</td></tr>
+      </table>
+    </section>
+
+    <section class="toc">
+      <h3>目录</h3>
+      <ol>
+        <li><a href="#s1">实验目标</a></li>
+        <li><a href="#s2">实验环境</a></li>
+        <li><a href="#s3">输入语言定义</a></li>
+        <li><a href="#s4">设计与实现</a></li>
+        <li><a href="#s5">编译与运行</a></li>
+        <li><a href="#s6">运行日志示例</a></li>
+        <li><a href="#s7">样例测试与结果</a></li>
+        <li><a href="#s8">单元测试（加分项）</a></li>
+        <li><a href="#s9">性能比较（加分项）</a></li>
+        <li><a href="#s10">文档生成</a></li>
+        <li><a href="#s11">实验结论</a></li>
+        <li><a href="#s12">实验心得与反思</a></li>
+        <li><a href="#s13">附录</a></li>
+      </ol>
+    </section>
+
+    <section id="s1">
+      <h2>1. 实验目标</h2>
+      <p>在原始实验软装置基础上，实现可提交、可复现、可测试的后缀表达式转换程序，满足评分项中功能、规范性与鲁棒性要求。</p>
+      <ol>
+        <li>将 <code>Parser.lookahead</code> 从静态成员改为实例成员。</li>
+        <li>消除 <code>rest()</code> 尾递归，改为循环实现。</li>
+        <li>扩展错误处理：错误分类、错误定位、错误信息输出，并支持 <code>--recover</code>。</li>
+        <li>补全 Javadoc 文档注释并生成 HTML 文档。</li>
+        <li>完成 JUnit 单元测试与递归/迭代性能比较。</li>
+      </ol>
+    </section>
+
+    <section id="s2">
+      <h2>2. 实验环境</h2>
+      <table>
+        <thead>
+          <tr><th>项目</th><th>配置</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>开发语言</td><td>Java</td></tr>
+          <tr><td>JDK 要求</td><td>JDK 1.5+</td></tr>
+          <tr><td>本机验证环境</td><td>OpenJDK 11.0.24 LTS</td></tr>
+          <tr><td>执行平台</td><td>macOS（zsh）/ Windows（cmd）</td></tr>
+          <tr><td>测试框架</td><td>JUnit 4.13.2 + Hamcrest 1.3</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s3">
+      <h2>3. 输入语言定义</h2>
+      <p>输入为一行中缀表达式，仅允许数字 <code>0~9</code> 与运算符 <code>+</code>、<code>-</code>，不允许空白字符。</p>
+      <pre>Expr  -> Term (('+'|'-') Term)*
+Term  -> digit
+digit -> '0'..'9'</pre>
+      <p>程序输出对应后缀表达式；当输入有误时，stdout 追加 <code>(error)</code>，并在 stderr 输出详细错误信息。</p>
+    </section>
+
+    <section id="s4">
+      <h2>4. 设计与实现</h2>
+      <div class="kpi-grid">
+        <div class="kpi"><span class="k-label">解析方式</span><span class="k-value">循环状态机</span></div>
+        <div class="kpi"><span class="k-label">lookahead</span><span class="k-value">实例字段</span></div>
+        <div class="kpi"><span class="k-label">错误类别</span><span class="k-value">词法 + 语法</span></div>
+        <div class="kpi"><span class="k-label">恢复模式</span><span class="k-value">--recover</span></div>
+      </div>
+
+      <h3>4.1 尾递归消除</h3>
+      <p>原程序通过 <code>rest()</code> 递归处理后续运算。新版本以 <code>expectOperand</code> 和 <code>pendingOp</code> 维护状态，使用循环完成等价逻辑，减少递归调用开销。</p>
+
+      <h3>4.2 错误分类与定位</h3>
+      <table>
+        <thead>
+          <tr><th>类别</th><th>触发条件</th><th>示例</th><th>输出形式</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>词法错误</td><td>空白字符、非法字符</td><td><code>1 +2</code> / <code>1a+2</code></td><td><code>LEXICAL error at position n</code></td></tr>
+          <tr><td>语法错误</td><td>缺运算符、缺运算量、空表达式</td><td><code>95+2</code> / <code>9-5+-2</code></td><td><code>SYNTAX error at position n</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s5">
+      <h2>5. 编译与运行</h2>
+      <h3>macOS / Linux</h3>
+      <pre>./build.sh
+./run.sh
+./run.sh --recover
+./run.sh --quiet &lt; testcases/tc-001.infix</pre>
+      <h3>Windows cmd</h3>
+      <pre>build.bat
+run.bat
+run.bat --recover
+run.bat --quiet &lt; testcases\tc-001.infix</pre>
+    </section>
+
+    <section id="s6">
+      <h2>6. 运行日志示例</h2>
+      <h3>6.1 正确输入：9-5+2</h3>
+      <pre>$ printf '9-5+2\n' | java -cp bin Postfix
+Input an infix expression and output its postfix notation:
+95-2+
+End of program.</pre>
+
+      <h3>6.2 语法错误：95+2（缺少运算符）</h3>
+      <pre>$ printf '95+2\n' | java -cp bin Postfix
+Input an infix expression and output its postfix notation:
+9 (error)
+End of program.
+SYNTAX error at position 2: missing operator</pre>
+
+      <h3>6.3 词法错误：1 +2（空白字符）</h3>
+      <pre>$ printf '1 +2\n' | java -cp bin Postfix
+Input an infix expression and output its postfix notation:
+1 (error)
+End of program.
+LEXICAL error at position 2: whitespace not allowed</pre>
+    </section>
+
+    <section id="s7">
+      <h2>7. 样例测试与结果</h2>
+      <table>
+        <thead>
+          <tr><th>用例</th><th>输入</th><th>期望输出</th><th>实际输出</th><th>结论</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>tc-001</td><td><code>9-5+2</code></td><td><code>95-2+</code></td><td><code>95-2+</code></td><td>通过</td></tr>
+          <tr><td>tc-002</td><td><code>1-2+3-4+5-6+7-8+9-0</code></td><td><code>12-3+4-5+6-7+8-9+0-</code></td><td><code>12-3+4-5+6-7+8-9+0-</code></td><td>通过</td></tr>
+          <tr><td>tc-003</td><td><code>95+2</code></td><td><code>9 (error)</code></td><td><code>9 (error)</code></td><td>通过</td></tr>
+          <tr><td>tc-004</td><td><code>9-5+-2</code></td><td><code>95- (error)</code></td><td><code>95- (error)</code></td><td>通过</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s8">
+      <h2>8. 单元测试（加分项）</h2>
+      <div class="kpi-grid">
+        <div class="kpi"><span class="k-label">测试总数</span><span class="k-value">6</span></div>
+        <div class="kpi"><span class="k-label">通过数</span><span class="k-value">6</span></div>
+        <div class="kpi"><span class="k-label">失败数</span><span class="k-value">0</span></div>
+        <div class="kpi"><span class="k-label">覆盖范围</span><span class="k-value">正常+异常</span></div>
+      </div>
+      <pre>$ ./test.sh
+Running JUnit tests...
+JUnit version 4.13.2
+......
+Time: 0.01
+OK (6 tests)</pre>
+    </section>
+
+    <section id="s9">
+      <h2>9. 性能比较（加分项）</h2>
+      <p>参数：<code>rounds=5</code>，<code>exprCount=2000</code>，<code>length=64</code></p>
+      <table>
+        <thead>
+          <tr><th>版本</th><th>平均耗时 (ms)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Recursive</td><td>2.680</td></tr>
+          <tr><td>Iterative</td><td>3.379</td></tr>
+        </tbody>
+      </table>
+      <figure>
+        <img src="report_assets/perf.png" alt="性能对比图" />
+        <figcaption>图 1. 递归版本与迭代版本平均耗时对比</figcaption>
+      </figure>
+      <p class="quote">说明：迭代版包含更完整的错误检测路径，本次测量中略慢属于合理现象。性能对比应基于功能等价与统一统计口径。</p>
+    </section>
+
+    <section id="s10">
+      <h2>10. 文档生成</h2>
+      <p>Javadoc 通过 <code>doc.sh / doc.bat</code> 生成到 <code>doc/</code>，覆盖 <code>Parser</code>、<code>ParseResult</code>、<code>ParseError</code> 等核心类。</p>
+    </section>
+
+    <section id="s11">
+      <h2>11. 实验结论</h2>
+      <ol>
+        <li>将 <code>lookahead</code> 由静态改为实例字段后，状态管理更符合面向对象设计。</li>
+        <li>尾递归改循环后，控制流更直接，便于扩展与维护。</li>
+        <li>错误分类与定位显著提升了程序鲁棒性和可诊断性。</li>
+        <li>跨平台脚本使提交结果在 macOS 与 Windows 上均可复现。</li>
+      </ol>
+    </section>
+
+    <section id="s12">
+      <h2>12. 实验心得与反思</h2>
+      <h3>12.1 从功能正确到工程可交付</h3>
+      <p>本实验最大的提升不在“能否输出后缀”，而在于把解析器、错误处理、测试、文档和脚本打通，形成可验证、可复现的完整提交物。</p>
+      <h3>12.2 设计取舍</h3>
+      <p>为了兼容样例输出，stdout 保持简洁；详细错误输出放在 stderr，使自动比对与问题定位互不干扰。</p>
+      <h3>12.3 后续改进</h3>
+      <ul>
+        <li>支持括号、乘除与优先级。</li>
+        <li>完善错误恢复策略（同步符号/短语级恢复）。</li>
+        <li>接入 CI 自动执行编译、测试与文档构建。</li>
+      </ul>
+    </section>
+
+    <section id="s13" class="page-break">
+      <h2>13. 附录：脚本与依赖</h2>
+      <table>
+        <thead>
+          <tr><th>文件</th><th>用途</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>build.sh / build.bat</code></td><td>编译源码到 <code>bin/</code></td></tr>
+          <tr><td><code>run.sh / run.bat</code></td><td>运行主程序</td></tr>
+          <tr><td><code>test.sh / test.bat</code></td><td>执行 JUnit 与样例对拍</td></tr>
+          <tr><td><code>doc.sh / doc.bat</code></td><td>生成 Javadoc 文档</td></tr>
+          <tr><td><code>perf.sh / perf.bat</code></td><td>运行性能比较</td></tr>
+          <tr><td><code>lib/</code></td><td>JUnit 4.13.2 + Hamcrest 1.3</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</body>
+</html>

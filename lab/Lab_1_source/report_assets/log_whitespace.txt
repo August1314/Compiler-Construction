@@ -1,0 +1,4 @@
+Input an infix expression and output its postfix notation:
+1 (error)
+End of program.
+LEXICAL error at position 2: whitespace not allowed

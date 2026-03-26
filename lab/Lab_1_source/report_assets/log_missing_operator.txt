@@ -1,0 +1,4 @@
+Input an infix expression and output its postfix notation:
+9 (error)
+End of program.
+SYNTAX error at position 2: missing operator

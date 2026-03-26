@@ -1,2 +1,4 @@
-javac -d bin src\Postfix.java
+@echo off
+if not exist bin mkdir bin
+javac -d bin src\*.java
 pause

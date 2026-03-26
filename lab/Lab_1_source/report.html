@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab1 实验报告 - 后缀表达式</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=IBM+Plex+Sans+Condensed:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f5f2ea;
+      --paper: #fffdfa;
+      --ink: #1d1d1b;
+      --muted: #5a5752;
+      --line: #d9d2c6;
+      --accent: #b14f2d;
+      --accent-2: #2d5d7b;
+      --accent-soft: #efe4d8;
+      --ok: #2a7b52;
+      --warn: #975a16;
+      --bad: #9d2f2f;
+      --shadow: 0 12px 30px rgba(40, 31, 20, 0.11);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 18% 10%, #efe2d0 0%, transparent 36%),
+        radial-gradient(circle at 90% 5%, #dfebe9 0%, transparent 28%),
+        repeating-linear-gradient(
+          -24deg,
+          rgba(61, 49, 36, 0.03) 0,
+          rgba(61, 49, 36, 0.03) 2px,
+          transparent 2px,
+          transparent 15px
+        ),
+        var(--bg);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: "Noto Serif SC", "Songti SC", serif;
+      line-height: 1.52;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 300px minmax(780px, 1fr);
+      gap: 24px;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    aside {
+      position: sticky;
+      top: 20px;
+      align-self: start;
+      max-height: calc(100vh - 40px);
+      overflow: auto;
+      background: linear-gradient(170deg, #fffaf5 0%, #faf6ef 100%);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 16px;
+      animation: fadeIn 500ms ease-out both;
+    }
+
+    .toc-title {
+      font-family: "IBM Plex Sans Condensed", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--accent-2);
+      font-size: 0.86rem;
+      margin: 0 0 12px;
+      border-bottom: 1px dashed var(--line);
+      padding-bottom: 8px;
+    }
+
+    .meta {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .meta b { color: var(--ink); }
+
+    nav a {
+      display: block;
+      text-decoration: none;
+      color: #2f2d29;
+      font-family: "IBM Plex Sans Condensed", sans-serif;
+      font-size: 0.95rem;
+      margin: 4px 0;
+      padding: 6px 8px;
+      border-radius: 8px;
+      transition: background-color 180ms ease, transform 180ms ease;
+    }
+
+    nav a:hover {
+      background: #efe8dd;
+      transform: translateX(2px);
+    }
+
+    main {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 26px 30px 38px;
+      animation: riseIn 600ms ease-out both;
+    }
+
+    .cover {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background:
+        linear-gradient(120deg, rgba(177, 79, 45, 0.11), transparent 40%),
+        linear-gradient(330deg, rgba(45, 93, 123, 0.12), transparent 45%),
+        #fffcf7;
+      padding: 22px 24px;
+      margin-bottom: 20px;
+    }
+
+    .course {
+      font-family: "IBM Plex Sans Condensed", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent-2);
+      margin: 0 0 6px;
+      font-size: 0.88rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.65rem, 2.6vw, 2.3rem);
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .cover-grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      font-family: "IBM Plex Sans Condensed", sans-serif;
+      font-size: 0.95rem;
+    }
+
+    .cover-grid div {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid #e7dfd4;
+      border-radius: 10px;
+      padding: 9px 10px;
+    }
+
+    h2 {
+      margin: 24px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: clamp(1.15rem, 1.6vw, 1.45rem);
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      margin: 16px 0 8px;
+      color: #262320;
+    }
+
+    p { margin: 8px 0; }
+
+    ul, ol {
+      margin: 8px 0 10px 1.2em;
+      padding: 0;
+    }
+
+    li { margin: 4px 0; }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin: 12px 0 8px;
+    }
+
+    .kpi {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fffdfa;
+      padding: 10px 10px 9px;
+    }
+
+    .kpi .label {
+      font-family: "IBM Plex Sans Condensed", sans-serif;
+      font-size: 0.84rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .kpi .value {
+      font-family: "IBM Plex Sans Condensed", sans-serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      line-height: 1.1;
+    }
+
+    .value.ok { color: var(--ok); }
+    .value.warn { color: var(--warn); }
+    .value.bad { color: var(--bad); }
+    .value.acc { color: var(--accent); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 14px;
+      font-size: 0.95rem;
+      background: #fff;
+    }
+
+    th, td {
+      border: 1px solid #e0d8cc;
+      padding: 8px 8px;
+      vertical-align: top;
+    }
+
+    th {
+      text-align: left;
+      background: #f5eee3;
+      font-family: "IBM Plex Sans Condensed", sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 1px 8px;
+      font-size: 0.78rem;
+      font-family: "IBM Plex Sans Condensed", sans-serif;
+      border: 1px solid transparent;
+    }
+
+    .tag.ok { color: #1c6b44; border-color: #8cc7a8; background: #e9f6ef; }
+    .tag.err { color: #8a2b2b; border-color: #d99d9d; background: #fdeeee; }
+
+    code, pre {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.84rem;
+    }
+
+    code {
+      background: #f5efe8;
+      border-radius: 5px;
+      padding: 0 4px;
+    }
+
+    pre {
+      margin: 8px 0 12px;
+      background: #211f1d;
+      color: #ece9e5;
+      border-radius: 10px;
+      padding: 10px 12px;
+      overflow: auto;
+      border: 1px solid #34302b;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    figure {
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      padding: 8px;
+    }
+
+    figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 6px;
+    }
+
+    figcaption {
+      margin-top: 6px;
+      font-size: 0.86rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .quote {
+      border-left: 4px solid var(--accent);
+      background: #f8f0e7;
+      padding: 10px 12px;
+      border-radius: 0 8px 8px 0;
+      margin: 10px 0;
+      color: #3b332b;
+    }
+
+    .foot {
+      margin-top: 24px;
+      border-top: 1px dashed var(--line);
+      padding-top: 10px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-family: "IBM Plex Sans Condensed", sans-serif;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(8px);
+      animation: reveal 480ms ease-out forwards;
+    }
+
+    .r1 { animation-delay: 80ms; }
+    .r2 { animation-delay: 140ms; }
+    .r3 { animation-delay: 200ms; }
+
+    @media (max-width: 1200px) {
+      .layout {
+        grid-template-columns: 1fr;
+        max-width: 980px;
+      }
+      aside {
+        position: static;
+        max-height: none;
+      }
+      .kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .split {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .layout { padding: 12px; gap: 12px; }
+      main { padding: 16px 14px 22px; }
+      .cover-grid {
+        grid-template-columns: 1fr;
+      }
+      .kpis {
+        grid-template-columns: 1fr;
+      }
+      th, td {
+        font-size: 0.9rem;
+        padding: 7px 6px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    .print-only { display: none; }
+
+    @page {
+      size: A4;
+      margin: 14mm 12mm 16mm;
+      @bottom-center {
+        content: "第 " counter(page) " 页";
+        font-family: "IBM Plex Sans Condensed", sans-serif;
+        font-size: 9pt;
+        color: #666666;
+      }
+    }
+
+    @page :first {
+      counter-reset: page 0;
+      @bottom-center {
+        content: "";
+      }
+    }
+
+    @media print {
+      *, *::before, *::after {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+      }
+
+      html, body {
+        background: #ffffff !important;
+      }
+
+      body {
+        font-family: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", "SimSun", serif !important;
+        font-size: 11pt;
+        line-height: 1.45;
+        color: #111111;
+        letter-spacing: normal !important;
+        word-spacing: normal !important;
+        text-align: left !important;
+        orphans: 3;
+        widows: 3;
+      }
+
+      .layout {
+        display: block;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      aside {
+        display: none !important;
+      }
+
+      main {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        border-radius: 0;
+        animation: none !important;
+      }
+
+      .cover {
+        margin-bottom: 7mm;
+        page-break-after: always;
+        break-after: page;
+        border: 1px solid #d8d8d8;
+        background: #ffffff;
+      }
+
+      h1, h2, h3, p, li, td, th, .course, .subtitle, .cover-grid, .kpi, .meta, .toc-title, nav a {
+        font-family: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", "SimSun", serif !important;
+        letter-spacing: normal !important;
+      }
+
+      .course, .toc-title {
+        text-transform: none !important;
+      }
+
+      .print-only {
+        display: block;
+      }
+
+      .print-toc {
+        border: 1px solid #d8d8d8;
+        border-radius: 8px;
+        padding: 8mm 8mm 6mm;
+        margin-bottom: 7mm;
+      }
+
+      .print-toc h2 {
+        margin-top: 0;
+      }
+
+      .print-toc ol {
+        margin: 0.2em 0 0.2em 1.25em;
+      }
+
+      .print-toc li {
+        margin: 0.14em 0;
+      }
+
+      .print-toc a {
+        text-decoration: none;
+        color: #111111;
+      }
+
+      h1 {
+        font-size: 20pt;
+      }
+
+      h2 {
+        font-size: 14.5pt;
+        break-after: avoid-page;
+      }
+
+      h3 {
+        font-size: 12pt;
+        break-after: avoid-page;
+      }
+
+      p, li, td, th {
+        font-size: 10.8pt;
+      }
+
+      section {
+        margin-bottom: 5mm;
+      }
+
+      table, pre, figure, .kpis, .split {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        border: 1px solid #d2d2d2;
+        background: #f7f7f7 !important;
+        color: #111111 !important;
+      }
+
+      .split {
+        display: block;
+      }
+
+      .split > * + * {
+        margin-top: 4mm;
+      }
+
+      .kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .kpi, th, .print-toc, .quote {
+        background: #f8f8f8 !important;
+      }
+
+      .quote {
+        border-left: 3px solid #777777;
+      }
+
+      .cover-grid div, .kpi, figure, table, th, td {
+        border-color: #cdcdcd !important;
+      }
+
+      .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+      }
+
+      .foot {
+        border-top: 1px solid #cfcfcf;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes reveal {
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <p class="toc-title">Lab1 Report Index</p>
+      <div class="meta"><b>课程：</b>编译器构造实验</div>
+      <div class="meta"><b>姓名：</b>梁力航</div>
+      <div class="meta"><b>学号：</b>23336128</div>
+      <div class="meta"><b>日期：</b>2026-03-26</div>
+      <nav>
+        <a href="#s1">1. 实验目标</a>
+        <a href="#s2">2. 实验环境</a>
+        <a href="#s3">3. 输入定义</a>
+        <a href="#s4">4. 设计与实现</a>
+        <a href="#s5">5. 编译与运行</a>
+        <a href="#s6">6. 运行日志</a>
+        <a href="#s7">7. 样例测试结果</a>
+        <a href="#s8">8. JUnit 测试</a>
+        <a href="#s9">9. 性能比较</a>
+        <a href="#s10">10. 文档生成</a>
+        <a href="#s11">11. 实验结论</a>
+        <a href="#s12">12. 心得与反思</a>
+        <a href="#s13">13. 附录</a>
+      </nav>
+    </aside>
+
+    <main>
+      <section class="cover reveal r1">
+        <p class="course">Sun Yat-sen University • Compiler Construction</p>
+        <h1>Lab1 实验报告：后缀表达式转换器</h1>
+        <p class="subtitle">中缀表达式到后缀表达式转换程序的设计、实现与实验分析</p>
+        <div class="cover-grid">
+          <div><b>项目编号：</b>Lab1 Postfix</div>
+          <div><b>语言：</b>Java (JDK 11 实测)</div>
+          <div><b>平台：</b>macOS / Windows cmd</div>
+          <div><b>必做项：</b>静态域改造、去尾递归、错误处理、Javadoc</div>
+          <div><b>加分项：</b>JUnit + 递归/迭代性能比较</div>
+          <div><b>交付物：</b>源码、脚本、文档、图表、日志</div>
+        </div>
+      </section>
+
+      <section class="print-only print-toc">
+        <h2>目录</h2>
+        <ol>
+          <li><a href="#s1">实验目标</a></li>
+          <li><a href="#s2">实验环境</a></li>
+          <li><a href="#s3">输入语言定义</a></li>
+          <li><a href="#s4">设计与实现</a></li>
+          <li><a href="#s5">编译与运行</a></li>
+          <li><a href="#s6">运行日志</a></li>
+          <li><a href="#s7">样例测试结果</a></li>
+          <li><a href="#s8">JUnit 测试</a></li>
+          <li><a href="#s9">性能比较</a></li>
+          <li><a href="#s10">文档生成</a></li>
+          <li><a href="#s11">实验结论</a></li>
+          <li><a href="#s12">实验心得与反思</a></li>
+          <li><a href="#s13">附录</a></li>
+        </ol>
+      </section>
+
+      <section id="s1" class="reveal r1">
+        <h2>1. 实验目标</h2>
+        <p>在原始实验软装置基础上，完成可提交、可复现、可测试的 Postfix 转换程序，并满足评分项对规范性与鲁棒性的要求。</p>
+        <ol>
+          <li>将 <code>Parser.lookahead</code> 从静态成员改为实例成员，消除共享状态风险。</li>
+          <li>消除 <code>rest()</code> 尾递归，用循环等价重写。</li>
+          <li>实现错误分类、定位、报错信息输出，支持 <code>--recover</code> 恢复模式。</li>
+          <li>补全 Javadoc 文档并生成 HTML 文档目录。</li>
+          <li>扩展 JUnit 自动化测试与性能比较脚本。</li>
+        </ol>
+      </section>
+
+      <section id="s2" class="reveal r1">
+        <h2>2. 实验环境</h2>
+        <table>
+          <thead>
+            <tr><th>项目</th><th>配置</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>开发语言</td><td>Java</td></tr>
+            <tr><td>JDK 要求</td><td>JDK 1.5+</td></tr>
+            <tr><td>本机验证环境</td><td>OpenJDK 11.0.24 LTS</td></tr>
+            <tr><td>执行平台</td><td>macOS (zsh) / Windows (cmd)</td></tr>
+            <tr><td>测试库</td><td>JUnit 4.13.2 + Hamcrest 1.3</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="s3" class="reveal r2">
+        <h2>3. 输入语言定义</h2>
+        <p>输入是一行中缀表达式，仅允许单个数字与加减运算符，不允许空白字符。</p>
+        <pre>Expr  -&gt; Term (('+'|'-') Term)*
+Term  -&gt; digit
+digit -&gt; '0'..'9'</pre>
+        <p>输出为对应后缀表达式；若发生错误，stdout 追加 <code>(error)</code>，并在 stderr 给出错误类别与位置。</p>
+      </section>
+
+      <section id="s4" class="reveal r2">
+        <h2>4. 设计与实现</h2>
+        <div class="kpis">
+          <div class="kpi">
+            <div class="label">语法扫描方式</div>
+            <div class="value acc">循环状态机</div>
+          </div>
+          <div class="kpi">
+            <div class="label">字段设计</div>
+            <div class="value acc">实例字段</div>
+          </div>
+          <div class="kpi">
+            <div class="label">错误种类</div>
+            <div class="value warn">词法 + 语法</div>
+          </div>
+          <div class="kpi">
+            <div class="label">恢复模式</div>
+            <div class="value ok">--recover</div>
+          </div>
+        </div>
+
+        <h3>4.1 尾递归消除</h3>
+        <p>原始程序在 <code>rest()</code> 中尾递归处理连续运算符。当前版本改为 <b>expectOperand + pendingOp</b> 的循环状态机：先消费数字，再在下一数字出现时回填运算符，实现与原算法一致的后缀输出顺序。</p>
+
+        <h3>4.2 错误处理策略</h3>
+        <table>
+          <thead>
+            <tr><th>类别</th><th>触发条件</th><th>示例</th><th>输出</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>词法错误</td>
+              <td>空白字符、非法字符</td>
+              <td><code>1 +2</code> / <code>1a+2</code></td>
+              <td>LEXICAL error at position n</td>
+            </tr>
+            <tr>
+              <td>语法错误</td>
+              <td>缺运算符、缺运算量、空表达式</td>
+              <td><code>95+2</code> / <code>9-5+-2</code></td>
+              <td>SYNTAX error at position n</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>4.3 错误恢复</h3>
+        <p>默认模式遇首错停止；<code>--recover</code> 模式下会跳过当前错误字符继续扫描，用于一次运行报告更多错误。</p>
+      </section>
+
+      <section id="s5" class="reveal r2">
+        <h2>5. 编译与运行</h2>
+        <div class="split">
+          <div>
+            <h3>macOS / Linux</h3>
+            <pre>./build.sh
+./run.sh
+./run.sh --recover
+./run.sh --quiet &lt; testcases/tc-001.infix</pre>
+          </div>
+          <div>
+            <h3>Windows cmd</h3>
+            <pre>build.bat
+run.bat
+run.bat --recover
+run.bat --quiet &lt; testcases\tc-001.infix</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="s6" class="reveal r2">
+        <h2>6. 运行日志（终端 I/O）</h2>
+        <h3>6.1 正确输入：9-5+2</h3>
+        <pre>$ printf '9-5+2\n' | java -cp bin Postfix
+Input an infix expression and output its postfix notation:
+95-2+
+End of program.</pre>
+
+        <h3>6.2 语法错误：95+2（缺少运算符）</h3>
+        <pre>$ printf '95+2\n' | java -cp bin Postfix
+Input an infix expression and output its postfix notation:
+9 (error)
+End of program.
+SYNTAX error at position 2: missing operator</pre>
+
+        <h3>6.3 词法错误：1 +2（空白字符）</h3>
+        <pre>$ printf '1 +2\n' | java -cp bin Postfix
+Input an infix expression and output its postfix notation:
+1 (error)
+End of program.
+LEXICAL error at position 2: whitespace not allowed</pre>
+      </section>
+
+      <section id="s7" class="reveal r3">
+        <h2>7. 样例测试与结果</h2>
+        <table>
+          <thead>
+            <tr><th>用例</th><th>输入</th><th>期望输出</th><th>实际输出</th><th>结论</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>tc-001</td>
+              <td><code>9-5+2</code></td>
+              <td><code>95-2+</code></td>
+              <td><code>95-2+</code></td>
+              <td><span class="tag ok">通过</span></td>
+            </tr>
+            <tr>
+              <td>tc-002</td>
+              <td><code>1-2+3-4+5-6+7-8+9-0</code></td>
+              <td><code>12-3+4-5+6-7+8-9+0-</code></td>
+              <td><code>12-3+4-5+6-7+8-9+0-</code></td>
+              <td><span class="tag ok">通过</span></td>
+            </tr>
+            <tr>
+              <td>tc-003</td>
+              <td><code>95+2</code></td>
+              <td><code>9 (error)</code></td>
+              <td><code>9 (error)</code></td>
+              <td><span class="tag ok">通过</span></td>
+            </tr>
+            <tr>
+              <td>tc-004</td>
+              <td><code>9-5+-2</code></td>
+              <td><code>95- (error)</code></td>
+              <td><code>95- (error)</code></td>
+              <td><span class="tag ok">通过</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="s8" class="reveal r3">
+        <h2>8. JUnit 测试（加分项）</h2>
+        <div class="kpis">
+          <div class="kpi">
+            <div class="label">测试总数</div>
+            <div class="value acc">6</div>
+          </div>
+          <div class="kpi">
+            <div class="label">通过数</div>
+            <div class="value ok">6</div>
+          </div>
+          <div class="kpi">
+            <div class="label">失败数</div>
+            <div class="value bad">0</div>
+          </div>
+          <div class="kpi">
+            <div class="label">覆盖类型</div>
+            <div class="value warn">正常/异常</div>
+          </div>
+        </div>
+        <pre>$ ./test.sh
+Running JUnit tests...
+JUnit version 4.13.2
+......
+Time: 0.01
+OK (6 tests)</pre>
+      </section>
+
+      <section id="s9" class="reveal r3">
+        <h2>9. 性能比较（加分项）</h2>
+        <p>配置：<code>rounds=5</code>，<code>exprCount=2000</code>，<code>length=64</code></p>
+        <div class="split">
+          <div>
+            <table>
+              <thead>
+                <tr><th>版本</th><th>平均耗时 (ms)</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Recursive</td><td>2.680</td></tr>
+                <tr><td>Iterative</td><td>3.379</td></tr>
+              </tbody>
+            </table>
+            <p class="quote">迭代版略慢的主要原因是加入了更完整的错误检测路径。该结果说明“消除尾递归”并不必然带来端到端性能提升，功能复杂度同样会影响总体耗时。</p>
+          </div>
+          <figure>
+            <img src="report_assets/perf.png" alt="性能比较图" />
+            <figcaption>图 1. Recursive vs Iterative 平均耗时对比</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="s10" class="reveal r3">
+        <h2>10. 文档生成</h2>
+        <p>Javadoc 已通过 <code>doc.sh / doc.bat</code> 生成到 <code>doc/</code> 目录，包含 <code>Parser</code>、<code>ParseResult</code>、<code>ParseError</code> 等核心类的接口说明。</p>
+      </section>
+
+      <section id="s11" class="reveal r3">
+        <h2>11. 实验结论</h2>
+        <ol>
+          <li>实例字段替代静态字段后，Parser 状态边界更清晰，规避多实例共享状态隐患。</li>
+          <li>尾递归消除提升了实现可控性，但真实性能需结合完整功能实现进行测量。</li>
+          <li>错误分类 + 定位 + 可选恢复显著提升了程序鲁棒性与可诊断性。</li>
+          <li>跨平台脚本（sh/bat）使提交结果在不同系统环境中更易复现。</li>
+        </ol>
+      </section>
+
+      <section id="s12" class="reveal r3">
+        <h2>12. 实验心得与反思</h2>
+        <h3>12.1 从“能跑”到“可交付”</h3>
+        <p>实验初始版本关注功能最小闭环，工程层面约束很弱。本次将错误模型、测试脚本、文档链路补齐后，项目从课堂 demo 变成了可评估、可复现的提交资产。</p>
+
+        <h3>12.2 设计权衡</h3>
+        <p>为保留原有输出兼容性，stdout 只保留后缀结果与 <code>(error)</code> 标记，详细错误落到 stderr。该策略在自动对拍与人工调试之间取得平衡。</p>
+
+        <h3>12.3 后续改进方向</h3>
+        <ul>
+          <li>扩展语法到括号、乘除与优先级规则。</li>
+          <li>引入更系统的 panic-mode 同步机制，提升恢复质量。</li>
+          <li>把测试与文档生成挂到 CI，形成持续质量门禁。</li>
+        </ul>
+      </section>
+
+      <section id="s13" class="reveal r3">
+        <h2>13. 附录：脚本与依赖</h2>
+        <table>
+          <thead>
+            <tr><th>文件</th><th>用途</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>build.sh / build.bat</code></td><td>编译源码到 <code>bin/</code></td></tr>
+            <tr><td><code>run.sh / run.bat</code></td><td>运行主程序</td></tr>
+            <tr><td><code>test.sh / test.bat</code></td><td>执行 JUnit + 样例对拍</td></tr>
+            <tr><td><code>doc.sh / doc.bat</code></td><td>生成 Javadoc</td></tr>
+            <tr><td><code>perf.sh / perf.bat</code></td><td>性能比较并输出统计</td></tr>
+            <tr><td><code>lib/</code></td><td>JUnit 4.13.2 + Hamcrest 1.3</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

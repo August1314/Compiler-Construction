@@ -1,0 +1,3 @@
+Input an infix expression and output its postfix notation:
+95-2+
+End of program.

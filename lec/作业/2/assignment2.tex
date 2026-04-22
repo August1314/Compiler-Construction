@@ -1,0 +1,246 @@
+\documentclass[12pt]{article}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\usepackage{amsmath,amssymb}
+\usepackage{tikz}
+\usepackage{geometry}
+
+\setCJKmainfont{Songti SC}
+\setCJKsansfont{Heiti SC}
+\setCJKmonofont{Songti SC}
+
+\usetikzlibrary{automata,positioning,arrows}
+\geometry{a4paper,margin=1in}
+\renewcommand{\arraystretch}{1.2}
+
+\begin{document}
+
+\begin{center}
+    {\LARGE\bfseries 编译原理作业 2\par}
+    \vspace{1.2cm}
+    {\large
+    \begin{tabular}{rl}
+    姓名：& 梁力航 \\
+    学号：& 23336128 \\
+    日期：& 2026年4月16日
+    \end{tabular}\par}
+\end{center}
+
+\vspace{1cm}
+
+\section*{第 1 题}
+已知文法
+\[
+S \rightarrow aSb \mid ab
+\]
+
+\subsection*{1. 拓广文法与 LR(0) 项目}
+拓广文法为
+\[
+S' \rightarrow S
+\]
+\[
+S \rightarrow aSb \mid ab
+\]
+
+全部 LR(0) 项目为：
+\begin{itemize}
+    \item $S' \rightarrow \cdot S$
+    \item $S' \rightarrow S \cdot$
+    \item $S \rightarrow \cdot aSb$
+    \item $S \rightarrow a \cdot Sb$
+    \item $S \rightarrow aS \cdot b$
+    \item $S \rightarrow aSb \cdot$
+    \item $S \rightarrow \cdot ab$
+    \item $S \rightarrow a \cdot b$
+    \item $S \rightarrow ab \cdot$
+\end{itemize}
+
+\subsection*{2. LR(0) 项目集规范族与 DFA}
+记产生式编号为
+\begin{enumerate}
+    \item $S \rightarrow aSb$
+    \item $S \rightarrow ab$
+\end{enumerate}
+
+项目集规范族为：
+\[
+I_0 = \{S' \rightarrow \cdot S,\; S \rightarrow \cdot aSb,\; S \rightarrow \cdot ab\}
+\]
+\[
+I_1 = goto(I_0,S) = \{S' \rightarrow S \cdot\}
+\]
+\[
+I_2 = goto(I_0,a) = \{S \rightarrow a \cdot Sb,\; S \rightarrow a \cdot b,\; S \rightarrow \cdot aSb,\; S \rightarrow \cdot ab\}
+\]
+\[
+I_3 = goto(I_2,S) = \{S \rightarrow aS \cdot b\}
+\]
+\[
+I_4 = goto(I_2,b) = \{S \rightarrow ab \cdot\}
+\]
+\[
+I_5 = goto(I_3,b) = \{S \rightarrow aSb \cdot\}
+\]
+
+且
+\[
+goto(I_2,a)=I_2
+\]
+所以 $I_2$ 上有一条关于终结符 $a$ 的自环。
+
+对应 DFA 如下：
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[shorten >=1pt,node distance=3cm,on grid,auto]
+        \node[state,initial] (q0) {$I_0$};
+        \node[state] (q1) [right=of q0] {$I_1$};
+        \node[state] (q2) [below=of q0] {$I_2$};
+        \node[state] (q3) [right=of q2] {$I_3$};
+        \node[state] (q4) [below=of q3] {$I_4$};
+        \node[state] (q5) [right=of q3] {$I_5$};
+
+        \path[->]
+        (q0) edge node {S} (q1)
+             edge node[left] {a} (q2)
+        (q2) edge[loop left] node {a} (q2)
+             edge node {S} (q3)
+             edge node[right] {b} (q4)
+        (q3) edge node {b} (q5);
+    \end{tikzpicture}
+    \caption{文法 $G'$ 的 LR(0) 项目集 DFA}
+\end{figure}
+
+\subsection*{3. FOLLOW 集、SLR(1) 判断与分析表}
+有
+\[
+FOLLOW(S')=\{\$\},\qquad FOLLOW(S)=\{b,\$\}
+\]
+
+归约项目只出现在 $I_4$ 与 $I_5$：
+\begin{itemize}
+    \item $I_4=\{S \rightarrow ab \cdot\}$，在 $FOLLOW(S)$ 上填入 $r2$；
+    \item $I_5=\{S \rightarrow aSb \cdot\}$，在 $FOLLOW(S)$ 上填入 $r1$。
+\end{itemize}
+
+因此 SLR 分析表为：
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+状态 & ACTION($a$) & ACTION($b$) & ACTION($\$$) & GOTO($S$) \\
+\hline
+0 & $s2$ &  &  & 1 \\
+1 &  &  & acc &  \\
+2 & $s2$ & $s4$ &  & 3 \\
+3 &  & $s5$ &  &  \\
+4 &  & $r2$ & $r2$ &  \\
+5 &  & $r1$ & $r1$ &  \\
+\hline
+\end{tabular}
+\end{center}
+
+表中无冲突，所以该文法是 \textbf{SLR(1) 文法}。
+
+\section*{第 2 题}
+已知文法
+\[
+S \rightarrow E
+\]
+\[
+E \rightarrow E+E \mid -E \mid id
+\]
+
+\subsection*{1. FIRST 集与 FOLLOW 集}
+因为 $E$ 最终只能推出以 $-$ 或 $id$ 开始的串，所以
+\[
+FIRST(E)=\{-,id\},\qquad FIRST(S)=\{-,id\}
+\]
+
+又因为：
+\begin{itemize}
+    \item 由 $S \rightarrow E$，得 $\$ \in FOLLOW(E)$；
+    \item 由 $E \rightarrow E+E$，得 $+ \in FOLLOW(E)$。
+\end{itemize}
+故
+\[
+FOLLOW(S)=\{\$\},\qquad FOLLOW(E)=\{+,\$\}
+\]
+
+\subsection*{2. 该文法为什么不是 SLR(1) 文法}
+取 LR(0) 项目集中的关键状态为：
+\[
+I_0=\{S' \rightarrow \cdot S,\; S \rightarrow \cdot E,\; E \rightarrow \cdot E+E,\; E \rightarrow \cdot -E,\; E \rightarrow \cdot id\}
+\]
+\[
+I_1=\{S \rightarrow E \cdot,\; E \rightarrow E \cdot +E\}
+\]
+\[
+I_2=\{S' \rightarrow S \cdot\}
+\]
+\[
+I_3=\{E \rightarrow - \cdot E,\; E \rightarrow \cdot E+E,\; E \rightarrow \cdot -E,\; E \rightarrow \cdot id\}
+\]
+\[
+I_4=\{E \rightarrow id \cdot\}
+\]
+\[
+I_5=\{E \rightarrow E+ \cdot E,\; E \rightarrow \cdot E+E,\; E \rightarrow \cdot -E,\; E \rightarrow \cdot id\}
+\]
+\[
+I_6=\{E \rightarrow -E \cdot,\; E \rightarrow E \cdot +E\}
+\]
+\[
+I_7=\{E \rightarrow E+E \cdot,\; E \rightarrow E \cdot +E\}
+\]
+
+在状态 $I_6$ 中，项目 $E \rightarrow -E \cdot$ 需要在 $FOLLOW(E)=\{+,\$\}$ 上归约，而项目 $E \rightarrow E \cdot +E$ 又要求在输入 $+$ 时移进，因此在符号 $+$ 上出现移进--归约冲突。
+
+同理，在状态 $I_7$ 中，项目 $E \rightarrow E+E \cdot$ 与项目 $E \rightarrow E \cdot +E$ 也会在符号 $+$ 上产生移进--归约冲突。
+
+所以该文法 \textbf{不是 SLR(1) 文法}。
+
+\subsection*{3. 按给定冲突处理策略分析串 \texttt{-id+id\$}}
+产生式编号记为：
+\begin{enumerate}
+    \item $S \rightarrow E$
+    \item $E \rightarrow E+E$
+    \item $E \rightarrow -E$
+    \item $E \rightarrow id$
+\end{enumerate}
+
+题目给定策略为：
+\begin{itemize}
+    \item 移进--归约冲突时优先移进；
+    \item 归约--归约冲突时优先采用编号较小的产生式归约。
+\end{itemize}
+
+本题实际只涉及移进--归约冲突，因此在状态 $I_6$ 遇到 $+$ 时取移进。
+
+分析过程如下：
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+步骤 & 状态栈 & 符号栈 & 输入串 & 动作 & 使用产生式编号 \\
+\hline
+1  & 0         & 空      & $-id+id\$$ & Shift $-$                   & - \\
+2  & 0,3       & $-$     & $id+id\$$  & Shift $id$                  & - \\
+3  & 0,3,4     & $-id$   & $+id\$$    & Reduce $E\to id$           & 4 \\
+4  & 0,3,6     & $-E$    & $+id\$$    & Goto$(3,E)=6$              & - \\
+5  & 0,3,6     & $-E$    & $+id\$$    & Shift $+$                   & - \\
+6  & 0,3,6,5   & $-E+$   & $id\$$     & Shift $id$                  & - \\
+7  & 0,3,6,5,4 & $-E+id$ & $\$$       & Reduce $E\to id$           & 4 \\
+8  & 0,3,6,5,7 & $-E+E$  & $\$$       & Goto$(5,E)=7$              & - \\
+9  & 0,3,6,5,7 & $-E+E$  & $\$$       & Reduce $E\to E+E$          & 2 \\
+10 & 0,3,6     & $-E$    & $\$$       & Goto$(3,E)=6$              & - \\
+11 & 0,3,6     & $-E$    & $\$$       & Reduce $E\to -E$           & 3 \\
+12 & 0,1       & $E$     & $\$$       & Goto$(0,E)=1$              & - \\
+13 & 0,1       & $E$     & $\$$       & Reduce $S\to E$            & 1 \\
+14 & 0,2       & $S$     & $\$$       & Goto$(0,S)=2$              & - \\
+15 & 0,2       & $S$     & $\$$       & Accept                      & - \\
+\hline
+\end{tabular}
+\end{center}
+
+因此，按题目给定的冲突处理规则，串 \texttt{-id+id\$} 可以被成功接受。
+
+\end{document}

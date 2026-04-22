@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<!-- Custom test cases for EvalExpr -->
+<test-case-definitions>
+
+<test-case>
+	<id>C101</id>
+	<description>Unary minus mixed with multiplication.</description>
+	<input>2 - 3 * -4</input>
+	<output>14</output>
+</test-case>
+
+<test-case>
+	<id>C102</id>
+	<description>Repeated minus should be parsed as binary minus plus unary minus.</description>
+	<input>5--2.5</input>
+	<output>7.5</output>
+</test-case>
+
+<test-case>
+	<id>C103</id>
+	<description>Power is right associative.</description>
+	<input>2 ^ 3 ^ 2</input>
+	<output>512</output>
+</test-case>
+
+<test-case>
+	<id>E101</id>
+	<description>Spaces only should be treated as an empty expression.</description>
+	<input><![CDATA[    ]]></input>
+	<exception>EmptyExpressionException</exception>
+</test-case>
+
+<test-case>
+	<id>E102</id>
+	<description>Tab is not a legal separator.</description>
+	<input><![CDATA[1	+ 2]]></input>
+	<exception>IllegalSymbolException</exception>
+</test-case>
+
+<test-case>
+	<id>E103</id>
+	<description>Leading dot is not a legal decimal literal.</description>
+	<input>.11 + 1</input>
+	<exception>IllegalDecimalException</exception>
+</test-case>
+
+<test-case>
+	<id>E104</id>
+	<description>Exponent without trailing digits is illegal.</description>
+	<input>7e + 1</input>
+	<exception>IllegalDecimalException</exception>
+</test-case>
+
+<test-case>
+	<id>E105</id>
+	<description>Identifiers other than predefined names are illegal.</description>
+	<input>5 / v4 + 1</input>
+	<exception>IllegalIdentifierException</exception>
+</test-case>
+
+<test-case>
+	<id>E106</id>
+	<description>Function name without a left parenthesis should trigger a function call error.</description>
+	<input>sin5</input>
+	<exception>FunctionCallException</exception>
+</test-case>
+
+<test-case>
+	<id>E107</id>
+	<description>Function name immediately followed by a value list is not a legal call.</description>
+	<input>max5, 6, 8)</input>
+	<exception>FunctionCallException</exception>
+</test-case>
+
+<test-case>
+	<id>E108</id>
+	<description>Extra colon should be reported as an unmatched trinary operator.</description>
+	<input>false ? 9 : true ? 1 : 3 : 5</input>
+	<exception>TrinaryOperationException</exception>
+</test-case>
+
+<test-case>
+	<id>E109</id>
+	<description>The first operand of a trinary expression must be boolean.</description>
+	<input>12 ? 34 : 56</input>
+	<exception>TypeMismatchedException</exception>
+</test-case>
+
+<test-case>
+	<id>E110</id>
+	<description>The second and third operands of a trinary expression must be numeric.</description>
+	<input>true ? 42.5 > 5 * 8 : 15</input>
+	<exception>TypeMismatchedException</exception>
+</test-case>
+
+<test-case>
+	<id>E111</id>
+	<description>Logical operators do not short circuit in this calculator.</description>
+	<input>false &amp; (1 / 0 &gt; 0)</input>
+	<exception>DividedByZeroException</exception>
+</test-case>
+
+<test-case>
+	<id>E112</id>
+	<description>Missing operator between a function call and a numeric literal.</description>
+	<input>cos(0.5)12.3E+4</input>
+	<exception>MissingOperatorException</exception>
+</test-case>
+
+</test-case-definitions>

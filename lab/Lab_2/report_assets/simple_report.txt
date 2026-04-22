@@ -1,0 +1,51 @@
+Testing Procedure
+========================================================
+
+C001 A simple expression.
+Input: 9 - 3 * 2
+Expected output: 3
+Passed !
+
+C002 Expression with arithmetic operations.
+Input: 2.25E+2 - (55.5 + 4 * (10 / 2) ^ 2)
+Expected output: 69.5
+Passed !
+
+C003 Expression with arithmetic operations.
+Input: 65 / 5 - 130e-1
+Expected output: 0.0
+Passed !
+
+E001 Left parenthesis expected.
+Input: (2 + 3) ^ 3) - ((1 + 1)
+Expected output: MissingLeftParenthesisException
+Passed !
+
+E002 Right parenthesis expected.
+Input: ((2 + 3) ^ ((3 - 1) + 1)
+Expected output: MissingRightParenthesisException
+Passed !
+
+E003 Operator expected.
+Input: (1 + 2) ^ (3 - 4)  5
+Expected output: MissingOperatorException
+Passed !
+
+E004 Operand expected.
+Input: (1 + 2) ^ (3 - ) + 5
+Expected output: MissingOperandException
+Passed !
+
+E005 Divided by 0.
+Input: 4 / (12 - 3 * 4) + 1
+Expected output: DividedByZeroException
+Passed !
+
+--------------------------------------------------------
+Statistics Report (8 test cases):
+
+	Passed case(s): 8 (100.0%)
+	Warning case(s): 0 (0.0%)
+	Failed case(s): 0 (0.0%)
+========================================================
+

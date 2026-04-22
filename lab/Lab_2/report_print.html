@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab2 实验报告（打印版）- ExprEval</title>
+  <style>
+    :root {
+      --ink: #111;
+      --muted: #444;
+      --line: #cfc7bc;
+      --soft: #f7f4ef;
+      --soft-2: #faf9f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      color: var(--ink);
+      background: #fff;
+      font-family: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", "SimSun", serif;
+      line-height: 1.55;
+    }
+
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 14mm 12mm 18mm;
+    }
+
+    .cover {
+      border: 1px solid var(--line);
+      padding: 9mm 8mm;
+      margin-bottom: 8mm;
+      background:
+        linear-gradient(135deg, rgba(196, 121, 80, 0.08), transparent 45%),
+        linear-gradient(315deg, rgba(81, 123, 148, 0.08), transparent 42%),
+        #fffefb;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      line-height: 1.25;
+      break-after: avoid-page;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 23pt;
+      margin-bottom: 4mm;
+    }
+
+    .cover p {
+      margin: 2mm 0;
+      text-align: center;
+    }
+
+    .meta-table, table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 3mm 0 4mm;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .meta-table td,
+    th, td {
+      border: 1px solid var(--line);
+      padding: 6px 7px;
+      vertical-align: top;
+      font-size: 10.8pt;
+    }
+
+    .meta-table td:first-child {
+      width: 20%;
+      background: var(--soft);
+      font-weight: bold;
+    }
+
+    th {
+      background: var(--soft);
+      text-align: left;
+    }
+
+    .toc {
+      border: 1px solid var(--line);
+      background: var(--soft-2);
+      padding: 6mm 7mm;
+      margin-bottom: 8mm;
+      page-break-after: always;
+      break-after: page;
+    }
+
+    .toc h2 {
+      font-size: 14pt;
+      margin-bottom: 4mm;
+    }
+
+    .toc ol {
+      margin: 0 0 0 1.2em;
+      padding: 0;
+      font-size: 11pt;
+    }
+
+    section h2 {
+      font-size: 15pt;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 1.5mm;
+      margin: 7mm 0 3mm;
+    }
+
+    h3 {
+      font-size: 12pt;
+      margin: 4.5mm 0 2mm;
+    }
+
+    p, li, pre, code {
+      font-size: 10.8pt;
+    }
+
+    ul {
+      margin: 2mm 0 3mm 1.2em;
+      padding: 0;
+    }
+
+    li {
+      margin: 1mm 0;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin: 3mm 0 4mm;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .kpi {
+      border: 1px solid var(--line);
+      background: var(--soft-2);
+      padding: 6px 7px;
+    }
+
+    .kpi .label {
+      display: block;
+      color: var(--muted);
+      font-size: 9.2pt;
+      margin-bottom: 2px;
+    }
+
+    .kpi .value {
+      display: block;
+      font-size: 11.8pt;
+      font-weight: bold;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: var(--soft-2);
+      padding: 6px 7px;
+    }
+
+    .panel h3 {
+      margin-top: 0;
+    }
+
+    .flow {
+      border: 1px solid var(--line);
+      background: #fffdfa;
+      padding: 6px;
+      margin: 3mm 0 4mm;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .flow svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    pre {
+      margin: 2mm 0 4mm;
+      padding: 8px;
+      border: 1px solid var(--line);
+      background: #f8f8f8;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow: hidden;
+      font-family: "SFMono-Regular", "Menlo", "Consolas", monospace;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    code {
+      font-family: "SFMono-Regular", "Menlo", "Consolas", monospace;
+      background: #f3f1ec;
+      border: 1px solid #dfd8cc;
+      padding: 0 3px;
+    }
+
+    .quote {
+      border-left: 3px solid #6d7f90;
+      background: #f6fafc;
+      padding: 6px 8px;
+      margin: 2mm 0 4mm;
+    }
+
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+    }
+
+    @page {
+      size: A4;
+      margin: 11mm 9mm 12mm;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="cover">
+      <p>中山大学计算机学院</p>
+      <h1>《编译器构造实验》Lab2 实验报告</h1>
+      <p>实验主题：表达式求值器 ExprEval</p>
+      <table class="meta-table">
+        <tbody>
+          <tr><td>课程</td><td>编译器构造实验（DCS292）</td></tr>
+          <tr><td>姓名</td><td>梁力航</td></tr>
+          <tr><td>学号</td><td>23336128</td></tr>
+          <tr><td>日期</td><td>2026-04-22</td></tr>
+          <tr><td>环境</td><td>OpenJDK 11.0.24 LTS / macOS</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="toc">
+      <h2>目录</h2>
+      <ol>
+        <li>实验目标</li>
+        <li>输入语言与语义约束</li>
+        <li>设计与实现</li>
+        <li>异常体系</li>
+        <li>测试与结果</li>
+        <li>关键代码片段</li>
+        <li>复现实验</li>
+        <li>实验结论</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>1. 实验目标</h2>
+      <div class="kpi-grid">
+        <div class="kpi"><span class="label">核心源码</span><span class="value">1 个文件</span></div>
+        <div class="kpi"><span class="label">标准测试</span><span class="value">16 / 16</span></div>
+        <div class="kpi"><span class="label">支持类型</span><span class="value">double / bool</span></div>
+        <div class="kpi"><span class="label">运算层级</span><span class="value">7 层</span></div>
+        <div class="kpi"><span class="label">异常对齐</span><span class="value">100%</span></div>
+      </div>
+      <p>本实验要求在既有实验软装置中补全 <code>parser.Calculator</code> 的实现，使其能够正确处理复杂表达式的求值，并在出现错误输入时抛出与测试框架一致的异常类型。</p>
+      <ul>
+        <li>支持算术、关系、逻辑、三目运算和预定义函数调用。</li>
+        <li>支持整数、浮点数与科学计数法。</li>
+        <li>支持布尔常量与数值 / 布尔双类型约束。</li>
+        <li>保持实现简单直接，避免超出实验需求的过度设计。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>2. 输入语言与语义约束</h2>
+      <table>
+        <thead>
+          <tr><th>类别</th><th>内容</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>常量</td><td><code>123</code>, <code>3.14</code>, <code>130e-1</code>, <code>true</code>, <code>false</code></td><td>数字与布尔常量均可出现</td></tr>
+          <tr><td>算术运算</td><td><code>+ - * / ^</code>，以及一元负号</td><td>参与项必须是数值型</td></tr>
+          <tr><td>关系运算</td><td><code>= &lt;&gt; &lt; &lt;= &gt; &gt;=</code></td><td>比较结果为布尔型</td></tr>
+          <tr><td>逻辑运算</td><td><code>! &amp; |</code></td><td>参与项必须是布尔型</td></tr>
+          <tr><td>三目运算</td><td><code>cond ? a : b</code></td><td>条件为布尔型，两个分支类型一致</td></tr>
+          <tr><td>函数</td><td><code>sin</code>, <code>cos</code>, <code>min</code>, <code>max</code></td><td><code>sin/cos</code> 接收 1 个参数，<code>min/max</code> 至少 2 个参数</td></tr>
+        </tbody>
+      </table>
+      <div class="quote">优先级从低到高为：三目运算、逻辑运算、关系运算、加减、乘除、幂运算、一元运算与函数调用。</div>
+    </section>
+
+    <section>
+      <h2>3. 设计与实现</h2>
+      <div class="split">
+        <div class="panel">
+          <h3>整体结构</h3>
+          <ul>
+            <li><code>Lexer</code>：负责生成 Token。</li>
+            <li><code>Token</code> / <code>TokenType</code>：描述词法单元。</li>
+            <li><code>Value</code>：承载数值型或布尔型中间结果。</li>
+            <li>递归下降解析函数：按优先级逐层求值。</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>设计取舍</h3>
+          <ul>
+            <li>不额外构造 AST，直接在解析过程中求值。</li>
+            <li>用手写数字扫描控制非法小数格式。</li>
+            <li>在 <code>requireNumber()</code> / <code>requireBoolean()</code> 中集中处理类型错误。</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="flow">
+        <svg viewBox="0 0 980 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="实现流程图">
+          <rect x="24" y="72" width="160" height="58" rx="14" fill="#f8e7db" stroke="#d6b49f"/>
+          <text x="104" y="108" text-anchor="middle" font-size="22" fill="#663522">输入字符串</text>
+          <rect x="234" y="54" width="180" height="94" rx="14" fill="#e5f0f4" stroke="#b6ced7"/>
+          <text x="324" y="90" text-anchor="middle" font-size="24" fill="#28566d">Lexer</text>
+          <text x="324" y="118" text-anchor="middle" font-size="16" fill="#28566d">Token 化与格式校验</text>
+          <rect x="470" y="54" width="200" height="94" rx="14" fill="#e7f2ea" stroke="#b5d1be"/>
+          <text x="570" y="90" text-anchor="middle" font-size="24" fill="#28573f">Parser</text>
+          <text x="570" y="118" text-anchor="middle" font-size="16" fill="#28573f">递归下降分层解析</text>
+          <rect x="724" y="54" width="220" height="94" rx="14" fill="#fff4ef" stroke="#dac1b5"/>
+          <text x="834" y="90" text-anchor="middle" font-size="24" fill="#603323">Value / Exception</text>
+          <text x="834" y="118" text-anchor="middle" font-size="16" fill="#603323">类型检查与异常映射</text>
+          <path d="M184 101H234" stroke="#80746a" stroke-width="3" fill="none"/>
+          <path d="M414 101H470" stroke="#80746a" stroke-width="3" fill="none"/>
+          <path d="M670 101H724" stroke="#80746a" stroke-width="3" fill="none"/>
+        </svg>
+      </div>
+
+      <h3>关键实现点</h3>
+      <ul>
+        <li>通过 <code>parseConditional()</code> 将三目运算作为最低优先级入口，并做分支类型一致性检查。</li>
+        <li>通过 <code>parseRelation()</code> 把关系运算结果统一转换成布尔值，避免后续算术层误用。</li>
+        <li>通过 <code>invokeUnaryMathFunction()</code> 与 <code>invokeExtremaFunction()</code> 统一封装函数参数检查逻辑。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>4. 异常体系</h2>
+      <table>
+        <thead>
+          <tr><th>异常</th><th>类别</th><th>典型触发场景</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>MissingLeftParenthesisException</code></td><td>语法</td><td>多余右括号</td></tr>
+          <tr><td><code>MissingRightParenthesisException</code></td><td>语法</td><td>左括号未闭合</td></tr>
+          <tr><td><code>MissingOperatorException</code></td><td>语法</td><td>两个操作数直接相邻</td></tr>
+          <tr><td><code>MissingOperandException</code></td><td>语法</td><td>运算符或函数参数后缺少操作数</td></tr>
+          <tr><td><code>IllegalDecimalException</code></td><td>词法</td><td>非法小数或科学计数法</td></tr>
+          <tr><td><code>IllegalIdentifierException</code></td><td>词法</td><td>未知函数名</td></tr>
+          <tr><td><code>FunctionCallException</code></td><td>语法</td><td>函数参数个数错误</td></tr>
+          <tr><td><code>DividedByZeroException</code></td><td>语义</td><td>除零</td></tr>
+          <tr><td><code>TypeMismatchedException</code></td><td>语义</td><td>布尔值和数值混用</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>5. 测试与结果</h2>
+      <div class="split">
+        <div class="panel">
+          <h3>simple.xml</h3>
+          <pre>Statistics Report (8 test cases):
+
+    Passed case(s): 8 (100.0%)
+    Warning case(s): 0 (0.0%)
+    Failed case(s): 0 (0.0%)</pre>
+        </div>
+        <div class="panel">
+          <h3>standard.xml</h3>
+          <pre>Statistics Report (16 test cases):
+
+    Passed case(s): 16 (100.0%)
+    Warning case(s): 0 (0.0%)
+    Failed case(s): 0 (0.0%)</pre>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr><th>用例</th><th>输入</th><th>期望</th><th>结果</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>C005</td><td><code>max(sin(0.15), cos(0.15), sin(cos(0.15)))</code></td><td>0.98877</td><td>通过</td></tr>
+          <tr><td>C006</td><td><code>sin(min(12, 3 * 5, 2 + 3 ^ 2, 3.14E2))</code></td><td>-0.99999</td><td>通过</td></tr>
+          <tr><td>E006</td><td><code>(13 &lt; 2 * 5) + 12</code></td><td><code>TypeMismatchedException</code></td><td>通过</td></tr>
+          <tr><td>E009</td><td><code>sin(2, 1)</code></td><td><code>FunctionCallException</code></td><td>通过</td></tr>
+          <tr><td>E010</td><td><code>min(2.5)</code></td><td><code>MissingOperandException</code></td><td>通过</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="page-break">
+      <h2>6. 关键代码片段</h2>
+      <h3>双类型值对象</h3>
+      <pre>private static final class Value {
+    private final boolean booleanType;
+    private final double numberValue;
+    private final boolean booleanValue;
+
+    private double requireNumber()
+        throws TypeMismatchedException {
+        if (booleanType) {
+            throw new TypeMismatchedException(
+                "Numeric value expected.");
+        }
+        return numberValue;
+    }
+}</pre>
+
+      <h3>三目运算处理</h3>
+      <pre>private Value parseConditional()
+    throws ExpressionException {
+    Value condition = parseLogicalOr();
+    if (lexer.peek().type != TokenType.QUESTION) {
+        return condition;
+    }
+    lexer.next();
+    boolean branch = condition.requireBoolean();
+    Value trueValue = parseConditionalOperand();
+    expect(TokenType.COLON, ...);
+    Value falseValue = parseConditionalOperand();
+    if (trueValue.booleanType != falseValue.booleanType) {
+        throw new TypeMismatchedException(...);
+    }
+    return branch ? trueValue : falseValue;
+}</pre>
+
+      <h3>函数参数校验</h3>
+      <pre>private Value invokeExtremaFunction(
+    List&lt;Value&gt; arguments, boolean minMode)
+    throws ExpressionException {
+    if (arguments.size() &lt; 2) {
+        throw new MissingOperandException(
+            "Function min/max requires at least two arguments.");
+    }
+    ...
+}</pre>
+    </section>
+
+    <section>
+      <h2>7. 复现实验</h2>
+      <pre>cd lab/Lab_2
+./build.sh
+./test.sh
+./doc.sh
+./run.sh</pre>
+      <p>Windows 下可使用 <code>build.bat</code>、<code>run.bat</code>、<code>test_simple.bat</code>、<code>test_standard.bat</code> 和 <code>doc.bat</code>。</p>
+    </section>
+
+    <section>
+      <h2>8. 实验结论</h2>
+      <p>本次实验完成了一个能够处理多种表达式结构的求值器，并把词法、语法和语义错误稳定映射到实验框架定义的异常体系中。</p>
+      <ul>
+        <li>标准测试 16 / 16 全通过，且没有 warning。</li>
+        <li>实现遵循 KISS 与 YAGNI：一个文件完成核心逻辑，但内部职责边界清晰。</li>
+        <li>交付物完整，包括源码、脚本、Javadoc、HTML 报告与 PDF 报告。</li>
+      </ul>
+    </section>
+  </div>
+</body>
+</html>

@@ -1,0 +1,86 @@
+Testing Procedure
+========================================================
+
+C101 Unary minus mixed with multiplication.
+Input: 2 - 3 * -4
+Expected output: 14
+Passed !
+
+C102 Repeated minus should be parsed as binary minus plus unary minus.
+Input: 5--2.5
+Expected output: 7.5
+Passed !
+
+C103 Power is right associative.
+Input: 2 ^ 3 ^ 2
+Expected output: 512
+Passed !
+
+E101 Spaces only should be treated as an empty expression.
+Input:     
+Expected output: EmptyExpressionException
+Passed !
+
+E102 Tab is not a legal separator.
+Input: 1	+ 2
+Expected output: IllegalSymbolException
+Passed !
+
+E103 Leading dot is not a legal decimal literal.
+Input: .11 + 1
+Expected output: IllegalDecimalException
+Passed !
+
+E104 Exponent without trailing digits is illegal.
+Input: 7e + 1
+Expected output: IllegalDecimalException
+Passed !
+
+E105 Identifiers other than predefined names are illegal.
+Input: 5 / v4 + 1
+Expected output: IllegalIdentifierException
+Passed !
+
+E106 Function name without a left parenthesis should trigger a function call error.
+Input: sin5
+Expected output: FunctionCallException
+Passed !
+
+E107 Function name immediately followed by a value list is not a legal call.
+Input: max5, 6, 8)
+Expected output: FunctionCallException
+Passed !
+
+E108 Extra colon should be reported as an unmatched trinary operator.
+Input: false ? 9 : true ? 1 : 3 : 5
+Expected output: TrinaryOperationException
+Passed !
+
+E109 The first operand of a trinary expression must be boolean.
+Input: 12 ? 34 : 56
+Expected output: TypeMismatchedException
+Passed !
+
+E110 The second and third operands of a trinary expression must be numeric.
+Input: true ? 42.5 > 5 * 8 : 15
+Expected output: TypeMismatchedException
+Passed !
+
+E111 Logical operators do not short circuit in this calculator.
+Input: false & (1 / 0 > 0)
+Expected output: DividedByZeroException
+Passed !
+
+E112 Missing operator between a function call and a numeric literal.
+Input: cos(0.5)12.3E+4
+Expected output: MissingOperatorException
+Passed !
+
+--------------------------------------------------------
+Statistics Report (15 test cases):
+
+	Passed case(s): 15 (100.0%)
+	Warning case(s): 0 (0.0%)
+	Failed case(s): 0 (0.0%)
+========================================================
+

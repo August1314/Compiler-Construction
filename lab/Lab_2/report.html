@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab2 实验报告 - 表达式求值器 ExprEval</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --paper: #fffdfa;
+      --ink: #1d1b19;
+      --muted: #59554f;
+      --line: #ddd4c8;
+      --accent: #b4552d;
+      --accent-2: #24556f;
+      --accent-3: #2c7b57;
+      --soft-a: #f6e4d7;
+      --soft-b: #deebef;
+      --soft-c: #e5f1ea;
+      --shadow: 0 14px 36px rgba(39, 30, 18, 0.12);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(180, 85, 45, 0.16), transparent 22%),
+        radial-gradient(circle at 88% 4%, rgba(36, 85, 111, 0.14), transparent 20%),
+        linear-gradient(180deg, #f8f4ed 0%, #f3efe7 100%);
+      font-family: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", serif;
+      line-height: 1.6;
+    }
+
+    .layout {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 22px;
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      gap: 24px;
+    }
+
+    aside {
+      position: sticky;
+      top: 22px;
+      align-self: start;
+      background: linear-gradient(180deg, #fffaf4 0%, #faf5ee 100%);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 16px;
+      max-height: calc(100vh - 44px);
+      overflow: auto;
+    }
+
+    .aside-title {
+      margin: 0 0 12px;
+      font-size: 0.82rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-2);
+      border-bottom: 1px dashed var(--line);
+      padding-bottom: 8px;
+      font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+    }
+
+    .meta {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 14px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .meta strong {
+      color: var(--ink);
+      display: block;
+      font-size: 0.92rem;
+      margin-bottom: 2px;
+    }
+
+    nav a {
+      display: block;
+      text-decoration: none;
+      color: #2d2a27;
+      padding: 7px 8px;
+      border-radius: 9px;
+      margin: 3px 0;
+      transition: 180ms ease;
+      font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+      font-size: 0.95rem;
+    }
+
+    nav a:hover {
+      background: #f1e7db;
+      transform: translateX(2px);
+    }
+
+    main {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px 30px 44px;
+    }
+
+    .cover {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background:
+        linear-gradient(125deg, rgba(180, 85, 45, 0.12), transparent 42%),
+        linear-gradient(315deg, rgba(36, 85, 111, 0.14), transparent 42%),
+        #fffcf7;
+      padding: 24px 26px;
+      margin-bottom: 20px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      font-size: 0.9rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent-2);
+      font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.9rem, 3vw, 2.6rem);
+      line-height: 1.18;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 760px;
+    }
+
+    .cover-grid {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .cover-grid div,
+    .kpi,
+    .card,
+    .code-card,
+    .mini-panel {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.86);
+    }
+
+    .cover-grid div {
+      padding: 10px 11px;
+      font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+      font-size: 0.95rem;
+    }
+
+    .cover-grid strong {
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    h2 {
+      margin: 26px 0 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+      font-size: clamp(1.2rem, 1.8vw, 1.48rem);
+    }
+
+    h3 {
+      margin: 16px 0 8px;
+      font-size: 1.04rem;
+    }
+
+    p { margin: 8px 0; }
+
+    ul {
+      margin: 8px 0 12px 1.2em;
+      padding: 0;
+    }
+
+    li { margin: 4px 0; }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin: 12px 0 16px;
+    }
+
+    .kpi {
+      padding: 11px 12px;
+      background: linear-gradient(180deg, #fffefb 0%, #faf7f1 100%);
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+      margin-bottom: 6px;
+    }
+
+    .kpi .value {
+      font-size: 1.42rem;
+      line-height: 1.1;
+      font-weight: 700;
+      font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+    }
+
+    .accent { color: var(--accent); }
+    .accent2 { color: var(--accent-2); }
+    .accent3 { color: var(--accent-3); }
+
+    .grid-2,
+    .grid-3 {
+      display: grid;
+      gap: 12px;
+      margin: 12px 0;
+    }
+
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .card {
+      padding: 14px 14px 12px;
+    }
+
+    .card h3,
+    .code-card h3,
+    .mini-panel h3 {
+      margin-top: 0;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      background: var(--soft-a);
+      color: #7f391f;
+      font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+      margin-bottom: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 14px;
+      background: #fff;
+    }
+
+    th, td {
+      border: 1px solid #e1d7cb;
+      padding: 8px 9px;
+      vertical-align: top;
+      text-align: left;
+      font-size: 0.96rem;
+    }
+
+    th {
+      background: #f7efe4;
+      font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+    }
+
+    code {
+      font-family: "SFMono-Regular", "Menlo", "Consolas", monospace;
+      padding: 0 4px;
+      border-radius: 4px;
+      background: #f6f2ec;
+      border: 1px solid #ece2d7;
+      font-size: 0.93em;
+    }
+
+    pre {
+      margin: 0;
+      padding: 12px 13px;
+      overflow: auto;
+      background: #1e1b18;
+      color: #f5efe7;
+      border-radius: 12px;
+      font-family: "SFMono-Regular", "Menlo", "Consolas", monospace;
+      line-height: 1.46;
+      font-size: 0.88rem;
+    }
+
+    .code-card {
+      padding: 14px;
+      background: #fffdf8;
+    }
+
+    .code-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 12px 0;
+    }
+
+    .mini-panel {
+      padding: 14px;
+      background: linear-gradient(180deg, #fefcf8 0%, #faf7f0 100%);
+    }
+
+    .bars {
+      display: grid;
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    .bar-line {
+      display: grid;
+      grid-template-columns: 130px 1fr 88px;
+      gap: 10px;
+      align-items: center;
+      font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+    }
+
+    .bar {
+      height: 16px;
+      border-radius: 999px;
+      background: #efe6db;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), #d27f54);
+    }
+
+    .bar.alt span {
+      background: linear-gradient(90deg, var(--accent-2), #4d8fb0);
+    }
+
+    .flow {
+      margin: 14px 0;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #fffefb 0%, #f9f4ec 100%);
+    }
+
+    .flow svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .note {
+      border-left: 3px solid var(--accent-2);
+      background: #f6fbfd;
+      padding: 10px 12px;
+      border-radius: 0 10px 10px 0;
+      margin: 10px 0 12px;
+    }
+
+    .footer {
+      margin-top: 26px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--line);
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    @media (max-width: 1080px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+        max-height: none;
+      }
+
+      .cover-grid,
+      .kpis,
+      .grid-3,
+      .grid-2,
+      .code-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <p class="aside-title">Lab2 Report</p>
+      <div class="meta">
+        <div><strong>课程</strong>编译器构造实验（DCS292）</div>
+        <div><strong>实验</strong>Lab2 表达式求值器 ExprEval</div>
+        <div><strong>姓名 / 学号</strong>梁力航 / 23336128</div>
+        <div><strong>日期</strong>2026-04-22</div>
+        <div><strong>环境</strong>OpenJDK 11.0.24 LTS / macOS</div>
+      </div>
+      <nav>
+        <a href="#goal">1. 实验目标</a>
+        <a href="#language">2. 输入语言与语义</a>
+        <a href="#design">3. 设计与实现</a>
+        <a href="#exceptions">4. 异常体系</a>
+        <a href="#tests">5. 测试与结果</a>
+        <a href="#code">6. 关键代码片段</a>
+        <a href="#usage">7. 复现实验</a>
+        <a href="#summary">8. 实验结论</a>
+      </nav>
+    </aside>
+
+    <main>
+      <section class="cover">
+        <p class="eyebrow">Compiler Construction Lab 2</p>
+        <h1>Lab2 实验报告：表达式求值器 ExprEval</h1>
+        <p class="subtitle">
+          本次实验在给定 GUI 与测试框架的前提下，补全 <code>parser.Calculator</code>，
+          实现完整的表达式词法分析、递归下降解析、语义检查与异常分发，并以官方 XML 测试集验证结果。
+        </p>
+        <div class="cover-grid">
+          <div><strong>核心源码</strong><span>1 个文件 / 748 行</span></div>
+          <div><strong>标准测试</strong><span>16 / 16 全通过</span></div>
+          <div><strong>支持结构</strong><span>算术 / 关系 / 逻辑 / 三目 / 函数</span></div>
+          <div><strong>交付物</strong><span>源码、Javadoc、HTML、PDF</span></div>
+        </div>
+      </section>
+
+      <section id="goal">
+        <h2>1. 实验目标</h2>
+        <div class="kpis">
+          <div class="kpi">
+            <div class="label">功能覆盖</div>
+            <div class="value accent">多层表达式</div>
+          </div>
+          <div class="kpi">
+            <div class="label">解析方式</div>
+            <div class="value accent2">递归下降</div>
+          </div>
+          <div class="kpi">
+            <div class="label">类型系统</div>
+            <div class="value accent3">double / bool</div>
+          </div>
+          <div class="kpi">
+            <div class="label">异常对齐</div>
+            <div class="value accent">实验框架</div>
+          </div>
+          <div class="kpi">
+            <div class="label">测试结果</div>
+            <div class="value accent3">100%</div>
+          </div>
+        </div>
+        <p>本实验的目标不是重写整个软装置，而是在既有 GUI、测试器和异常类基础上，精准实现 <code>calculate(String expression)</code> 的行为，使其同时满足：</p>
+        <ul>
+          <li>能够计算复杂表达式的正确数值结果。</li>
+          <li>能够区分数值型与布尔型中间结果，避免“看起来能算、其实语义错误”的情况。</li>
+          <li>在错误输入下抛出和官方测试预期一致的异常类型，而不是笼统失败。</li>
+          <li>保持实现简单、可读、可复用，不为实验额外引入不必要抽象。</li>
+        </ul>
+      </section>
+
+      <section id="language">
+        <h2>2. 输入语言与语义</h2>
+        <div class="grid-2">
+          <div class="card">
+            <span class="tag">词法单元</span>
+            <table>
+              <thead>
+                <tr><th>类别</th><th>示例</th><th>说明</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>整数</td><td><code>058</code>, <code>123</code></td><td>允许前导 0</td></tr>
+                <tr><td>实数 / 科学计数法</td><td><code>3.14</code>, <code>130e-1</code></td><td>显式校验非法小数格式</td></tr>
+                <tr><td>布尔常量</td><td><code>true</code>, <code>false</code></td><td>内部参与逻辑与三目条件</td></tr>
+                <tr><td>标识符</td><td><code>sin</code>, <code>max</code></td><td>仅允许预定义函数</td></tr>
+                <tr><td>运算符</td><td><code>+ - * / ^ ! &amp; | &lt; &lt;= &gt; &gt;= = &lt;&gt; ? :</code></td><td>按优先级分层解析</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <span class="tag">语义约束</span>
+            <table>
+              <thead>
+                <tr><th>结构</th><th>约束</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>算术运算</td><td>左右操作数必须为数值型</td></tr>
+                <tr><td>关系运算</td><td>比较对象必须为数值型，结果为布尔型</td></tr>
+                <tr><td>逻辑运算</td><td>参与项必须为布尔型</td></tr>
+                <tr><td>三目运算</td><td>条件为布尔型，两个分支类型必须一致</td></tr>
+                <tr><td><code>sin/cos</code></td><td>必须且仅能传入 1 个数值参数</td></tr>
+                <tr><td><code>min/max</code></td><td>至少 2 个数值参数</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="mini-panel">
+          <h3>优先级分层</h3>
+          <div class="bars">
+            <div class="bar-line"><strong>lowest</strong><div class="bar"><span style="width: 100%"></span></div><span>?:</span></div>
+            <div class="bar-line"><strong>logical</strong><div class="bar alt"><span style="width: 84%"></span></div><span>|, &amp;</span></div>
+            <div class="bar-line"><strong>relation</strong><div class="bar"><span style="width: 68%"></span></div><span>&lt; &lt;= &gt; &gt;= = &lt;&gt;</span></div>
+            <div class="bar-line"><strong>arithmetic</strong><div class="bar alt"><span style="width: 52%"></span></div><span>+ - * /</span></div>
+            <div class="bar-line"><strong>highest</strong><div class="bar"><span style="width: 36%"></span></div><span>unary, ^, call</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="design">
+        <h2>3. 设计与实现</h2>
+        <div class="grid-3">
+          <div class="card">
+            <span class="tag">Lexer</span>
+            <h3>词法阶段</h3>
+            <p>负责空白跳过、数字识别、标识符识别和多字符关系运算符识别。数字采用手写扫描逻辑，避免把非法格式留到 <code>Double.parseDouble</code> 之后才暴露。</p>
+          </div>
+          <div class="card">
+            <span class="tag">Parser</span>
+            <h3>语法阶段</h3>
+            <p>使用递归下降逐层处理优先级：<code>conditional → logical → relation → additive → multiplicative → power → unary → primary</code>，实现清晰、调试成本低。</p>
+          </div>
+          <div class="card">
+            <span class="tag">Value</span>
+            <h3>语义阶段</h3>
+            <p>通过显式 <code>Value</code> 类型携带 <code>double</code> 或 <code>boolean</code>，在调用 <code>requireNumber()</code> / <code>requireBoolean()</code> 时完成类型检查并抛出语义异常。</p>
+          </div>
+        </div>
+
+        <div class="flow">
+          <svg viewBox="0 0 1120 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ExprEval parsing flow">
+            <defs>
+              <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#f6e4d7"/>
+                <stop offset="100%" stop-color="#fff5ec"/>
+              </linearGradient>
+              <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#deebef"/>
+                <stop offset="100%" stop-color="#f3fafc"/>
+              </linearGradient>
+              <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#e5f1ea"/>
+                <stop offset="100%" stop-color="#f7fcf9"/>
+              </linearGradient>
+            </defs>
+            <rect x="25" y="44" rx="18" ry="18" width="210" height="78" fill="url(#g1)" stroke="#d7b89f"/>
+            <text x="130" y="76" font-size="26" text-anchor="middle" fill="#60321f">输入字符串</text>
+            <text x="130" y="104" font-size="18" text-anchor="middle" fill="#60321f">expression</text>
+
+            <rect x="310" y="28" rx="18" ry="18" width="220" height="110" fill="url(#g2)" stroke="#9ebfcd"/>
+            <text x="420" y="68" font-size="26" text-anchor="middle" fill="#1e4b60">Lexer</text>
+            <text x="420" y="98" font-size="18" text-anchor="middle" fill="#1e4b60">Token 化、空白跳过</text>
+            <text x="420" y="123" font-size="18" text-anchor="middle" fill="#1e4b60">数字 / 标识符 / 运算符识别</text>
+
+            <rect x="606" y="28" rx="18" ry="18" width="240" height="110" fill="url(#g3)" stroke="#9fc4ae"/>
+            <text x="726" y="68" font-size="26" text-anchor="middle" fill="#23583e">Parser</text>
+            <text x="726" y="98" font-size="18" text-anchor="middle" fill="#23583e">递归下降分层解析</text>
+            <text x="726" y="123" font-size="18" text-anchor="middle" fill="#23583e">按优先级构造求值过程</text>
+
+            <rect x="892" y="44" rx="18" ry="18" width="202" height="78" fill="#fff5ef" stroke="#d3b8ac"/>
+            <text x="993" y="76" font-size="26" text-anchor="middle" fill="#5f3222">Value</text>
+            <text x="993" y="104" font-size="18" text-anchor="middle" fill="#5f3222">double / boolean</text>
+
+            <rect x="268" y="198" rx="18" ry="18" width="250" height="92" fill="#fff8f1" stroke="#dfc6b5"/>
+            <text x="393" y="234" font-size="24" text-anchor="middle" fill="#68402a">异常映射</text>
+            <text x="393" y="263" font-size="18" text-anchor="middle" fill="#68402a">词法 / 语法 / 语义</text>
+
+            <rect x="600" y="188" rx="18" ry="18" width="314" height="112" fill="#f4fafb" stroke="#b8d1da"/>
+            <text x="757" y="225" font-size="24" text-anchor="middle" fill="#204d61">calculate()</text>
+            <text x="757" y="254" font-size="18" text-anchor="middle" fill="#204d61">最终要求结果为数值型</text>
+            <text x="757" y="279" font-size="18" text-anchor="middle" fill="#204d61">否则抛出 TypeMismatchedException</text>
+
+            <path d="M235 83H310" stroke="#8d7664" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+            <path d="M530 83H606" stroke="#60869a" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+            <path d="M846 83H892" stroke="#658a74" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+            <path d="M726 138V188" stroke="#658a74" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+            <path d="M606 244H518" stroke="#8b857f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+            <defs>
+              <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                <polygon points="0 0, 8 3, 0 6" fill="#6a625a"></polygon>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+
+        <div class="note">
+          设计上我刻意没有引入 AST 类层次或 Visitor。对本实验而言，目标是尽快对齐实验框架与异常口径；直接在递归下降过程中完成求值，结构更简单，也更符合 KISS 与 YAGNI。
+        </div>
+      </section>
+
+      <section id="exceptions">
+        <h2>4. 异常体系</h2>
+        <table>
+          <thead>
+            <tr><th>异常类型</th><th>类别</th><th>触发场景</th><th>示例</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>EmptyExpressionException</code></td><td>语法</td><td>输入为空或仅包含空白</td><td><code>""</code></td></tr>
+            <tr><td><code>MissingLeftParenthesisException</code></td><td>语法</td><td>出现多余右括号</td><td><code>(2+3)^3)</code></td></tr>
+            <tr><td><code>MissingRightParenthesisException</code></td><td>语法</td><td>左括号未闭合</td><td><code>((2+3)</code></td></tr>
+            <tr><td><code>MissingOperatorException</code></td><td>语法</td><td>两个操作数相邻或参数列表结构异常</td><td><code>(3-4) 5</code></td></tr>
+            <tr><td><code>MissingOperandException</code></td><td>语法</td><td>运算符、逗号或三目分支后缺少操作数</td><td><code>(3-)</code>, <code>min(2.5)</code></td></tr>
+            <tr><td><code>IllegalDecimalException</code></td><td>词法</td><td>非法小数或科学计数法格式</td><td><code>10.E+5</code></td></tr>
+            <tr><td><code>IllegalIdentifierException</code></td><td>词法</td><td>调用未定义函数</td><td><code>mix(5,2)</code></td></tr>
+            <tr><td><code>FunctionCallException</code></td><td>语法</td><td>函数参数个数与约束不一致</td><td><code>sin(2,1)</code></td></tr>
+            <tr><td><code>DividedByZeroException</code></td><td>语义</td><td>除数为 0</td><td><code>4 / (12 - 3 * 4)</code></td></tr>
+            <tr><td><code>TypeMismatchedException</code></td><td>语义</td><td>数值与布尔类型混用</td><td><code>(13 &lt; 10) + 12</code></td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="tests">
+        <h2>5. 测试与结果</h2>
+        <div class="grid-2">
+          <div class="mini-panel">
+            <h3>测试覆盖概览</h3>
+            <div class="bars">
+              <div class="bar-line"><strong>simple.xml</strong><div class="bar"><span style="width: 100%"></span></div><span>8 / 8</span></div>
+              <div class="bar-line"><strong>standard.xml</strong><div class="bar alt"><span style="width: 100%"></span></div><span>16 / 16</span></div>
+            </div>
+            <p>标准测试集覆盖了基础算术、括号嵌套、关系/逻辑、三目运算、预定义函数、科学计数法错误、未知函数、参数错误、除零与类型不匹配。</p>
+          </div>
+          <div class="mini-panel">
+            <h3>结果结论</h3>
+            <ul>
+              <li>正确输出：6 个标准成功用例全部通过。</li>
+              <li>错误检测：10 个标准异常用例全部匹配到目标异常类型。</li>
+              <li>警告数：0，说明没有出现“能报错但类型不精确”的情况。</li>
+              <li>失败数：0，说明实现与实验测试框架完全对齐。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="code-row">
+          <div class="code-card">
+            <h3>simple.xml 结果摘要</h3>
+            <pre>Statistics Report (8 test cases):
+
+    Passed case(s): 8 (100.0%)
+    Warning case(s): 0 (0.0%)
+    Failed case(s): 0 (0.0%)</pre>
+          </div>
+          <div class="code-card">
+            <h3>standard.xml 结果摘要</h3>
+            <pre>Statistics Report (16 test cases):
+
+    Passed case(s): 16 (100.0%)
+    Warning case(s): 0 (0.0%)
+    Failed case(s): 0 (0.0%)</pre>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr><th>编号</th><th>输入</th><th>期望</th><th>实际</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>C004</td><td><code>(5 &gt; 3) &amp; (4 &lt; 8) ? 15 : 16</code></td><td>15</td><td>通过</td></tr>
+            <tr><td>C005</td><td><code>max(sin(0.15), cos(0.15), sin(cos(0.15)))</code></td><td>0.98877</td><td>通过</td></tr>
+            <tr><td>E006</td><td><code>(13 &lt; 2 * 5) + 12</code></td><td><code>TypeMismatchedException</code></td><td>通过</td></tr>
+            <tr><td>E007</td><td><code>4 + 10.E+5 + 1</code></td><td><code>IllegalDecimalException</code></td><td>通过</td></tr>
+            <tr><td>E009</td><td><code>sin(2, 1)</code></td><td><code>FunctionCallException</code></td><td>通过</td></tr>
+            <tr><td>E010</td><td><code>min(2.5)</code></td><td><code>MissingOperandException</code></td><td>通过</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="code">
+        <h2>6. 关键代码片段</h2>
+        <div class="code-row">
+          <div class="code-card">
+            <h3>数值 / 布尔双类型封装</h3>
+            <pre>private static final class Value {
+    private final boolean booleanType;
+    private final double numberValue;
+    private final boolean booleanValue;
+
+    private double requireNumber()
+        throws TypeMismatchedException {
+        if (booleanType) {
+            throw new TypeMismatchedException(
+                "Numeric value expected.");
+        }
+        return numberValue;
+    }
+}</pre>
+          </div>
+          <div class="code-card">
+            <h3>三目运算的类型约束</h3>
+            <pre>private Value parseConditional()
+    throws ExpressionException {
+    Value condition = parseLogicalOr();
+    if (lexer.peek().type != TokenType.QUESTION) {
+        return condition;
+    }
+
+    lexer.next();
+    boolean branch = condition.requireBoolean();
+    Value trueValue = parseConditionalOperand();
+    expect(TokenType.COLON, ...);
+    Value falseValue = parseConditionalOperand();
+    if (trueValue.booleanType != falseValue.booleanType) {
+        throw new TypeMismatchedException(...);
+    }
+    return branch ? trueValue : falseValue;
+}</pre>
+          </div>
+        </div>
+
+        <div class="code-row">
+          <div class="code-card">
+            <h3>科学计数法手写扫描</h3>
+            <pre>if (index &lt; length && input.charAt(index) == '.') {
+    index++;
+    if (index &gt;= length ||
+        !Character.isDigit(input.charAt(index))) {
+        throw new IllegalDecimalException(...);
+    }
+}
+
+if (exponentMarker == 'e' || exponentMarker == 'E') {
+    ...
+    if (index &gt;= length ||
+        !Character.isDigit(input.charAt(index))) {
+        throw new IllegalDecimalException(...);
+    }
+}</pre>
+          </div>
+          <div class="code-card">
+            <h3>函数参数个数校验</h3>
+            <pre>private Value invokeExtremaFunction(
+    List&lt;Value&gt; arguments, boolean minMode)
+    throws ExpressionException {
+    if (arguments.size() &lt; 2) {
+        throw new MissingOperandException(
+            "Function min/max requires at least two arguments.");
+    }
+    ...
+}</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="usage">
+        <h2>7. 复现实验</h2>
+        <div class="grid-2">
+          <div class="mini-panel">
+            <h3>macOS / Linux</h3>
+            <pre>cd lab/Lab_2
+./build.sh
+./test.sh
+./doc.sh
+./run.sh</pre>
+          </div>
+          <div class="mini-panel">
+            <h3>Windows</h3>
+            <pre>cd lab\Lab_2
+build.bat
+test_simple.bat
+test_standard.bat
+doc.bat
+run.bat</pre>
+          </div>
+        </div>
+        <p>Javadoc 可通过 <code>doc/index.html</code> 查看；实验报告屏幕版为 <code>report.html</code>，打印版为 <code>report_print.html</code>，最终提交 PDF 由打印版导出。</p>
+      </section>
+
+      <section id="summary">
+        <h2>8. 实验结论</h2>
+        <p>Lab2 的关键不在“把表达式算出来”，而在于让表达式求值器同时具备编译器前端的三个基本特征：明确的词法边界、稳定的语法优先级和可解释的语义错误。</p>
+        <p>本次实现用一个文件完成了这些能力，但仍保持了职责分离：<code>Lexer</code> 只负责 token，<code>Parser</code> 只负责优先级和结构，<code>Value</code> 只负责类型约束。最终结果是：</p>
+        <ul>
+          <li>官方标准测试 16 / 16 全通过。</li>
+          <li>异常类型与实验框架完全对齐，没有警告与误报。</li>
+          <li>提交物完整，包括源码、Shell 脚本、Javadoc、HTML 报告与 PDF 报告。</li>
+        </ul>
+
+        <div class="footer">
+          文档生成时间：2026-04-22。报告基于真实编译与测试结果整理，不包含未验证的推测性结论。
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

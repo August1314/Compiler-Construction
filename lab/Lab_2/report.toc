@@ -1,0 +1,18 @@
+\contentsline {section}{\numberline {1}实验目标与本次重做范围}{2}{section.1}%
+\contentsline {section}{\numberline {2}二义性分析}{2}{section.2}%
+\contentsline {section}{\numberline {3}词法分析设计与实现}{3}{section.3}%
+\contentsline {subsection}{\numberline {3.1}单词类别和边界规则}{3}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}数值扫描自动机}{3}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}词法实现细节}{3}{subsection.3.3}%
+\contentsline {section}{\numberline {4}算符优先语法分析与语义处理}{4}{section.4}%
+\contentsline {subsection}{\numberline {4.1}模块划分}{4}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}优先级与结合性}{5}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}压缩后的 OPP 关系表}{5}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}移进/归约流程}{6}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}语义规则与异常落点}{7}{subsection.4.5}%
+\contentsline {section}{\numberline {5}自定义测试用例说明}{8}{section.5}%
+\contentsline {section}{\numberline {6}程序运行截图}{8}{section.6}%
+\contentsline {subsection}{\numberline {6.1}GUI 运行界面}{8}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}测试结果截图}{9}{subsection.6.2}%
+\contentsline {section}{\numberline {7}文档与源程序组织说明}{10}{section.7}%
+\contentsline {section}{\numberline {8}实验心得}{10}{section.8}%

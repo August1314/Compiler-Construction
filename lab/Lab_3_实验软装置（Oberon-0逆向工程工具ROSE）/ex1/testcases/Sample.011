@@ -1,0 +1,8 @@
+(* ERROR: TypeMismatchedException - BOOLEAN used in arithmetic expression *)
+MODULE Sample;
+  VAR x: INTEGER;
+    flag: BOOLEAN;
+BEGIN
+  flag := TRUE;
+  x := flag + 10
+END Sample.

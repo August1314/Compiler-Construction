@@ -1,0 +1,181 @@
+\documentclass[12pt,a4paper,fontset=none]{ctexart}
+\usepackage[a4paper,margin=1.7cm]{geometry}
+\usepackage{fontspec,amsmath,array,booktabs,tabularx}
+\usepackage{enumitem,fancyhdr,float,hyperref}
+\usepackage[most]{tcolorbox}
+\usepackage{xcolor}
+
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue}
+\setmainfont{Times New Roman}\setsansfont{Arial}\setmonofont{Menlo}
+\setCJKmainfont{Songti SC}\setCJKsansfont{Heiti SC}\setCJKmonofont{Songti SC}
+\setlength{\emergencystretch}{1.5em}
+\sloppy
+\hfuzz=15pt
+\hbadness=10000
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{ROSE 实验四}
+\fancyhead[R]{Oberon-0 翻译模式设计}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{15pt}
+\setlist[itemize]{leftmargin=1.8em,itemsep=0.25em}
+\renewcommand{\arraystretch}{1.22}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\definecolor{accent}{HTML}{9A3412}
+\definecolor{accenttwo}{HTML}{0F4C81}
+\definecolor{accentthree}{HTML}{2F6B3D}
+\definecolor{softb}{HTML}{E8F0F7}
+\definecolor{linegray}{HTML}{D7CEC5}
+\definecolor{boxbg}{HTML}{FCFAF7}
+
+\newtcolorbox{plainBox}{enhanced,colback=boxbg,colframe=linegray,boxrule=0.7pt,arc=1.2mm,left=2.3mm,right=2.3mm,top=1.8mm,bottom=1.8mm,before upper=\raggedright}
+
+\title{Oberon-0 语言的翻译模式设计}
+\author{梁力航\quad 23336128}
+\date{2026年5月20日}
+
+\begin{document}
+\hfuzz=20pt
+\hbadness=10000
+\maketitle
+
+\begin{plainBox}
+本文档对应 ROSE 项目实验四的提交要求：描述 Oberon-0 语言的翻译模式（Translation Scheme），包括文法转换、属性传递方案和递归子程序映射，并比较自顶向下与自底向上两种分析策略。
+\end{plainBox}
+
+\section{文法转换}
+
+为适应递归下降预测分析（自顶向下、LL），对原始 Oberon-0 EBNF 文法做了以下转换。
+
+\subsection{消除左递归}
+
+原始 grammar 中三处存在直接左递归，转换为带迭代循环的等价形式：
+
+\begin{table}[H]\centering
+\begin{tabularx}{\textwidth}{>{\ttfamily\small}Y>{\ttfamily\small}Y}
+\toprule
+\textbf{原始（左递归）} & \textbf{转换后（{ }* 迭代）} \\
+\midrule
+simple\_expr → term \newline
+\quad\ \ |\ simple\_expr + term \newline
+\quad\ \ |\ simple\_expr - term \newline
+\quad\ \ |\ simple\_expr OR term & simple\_expr → term \{ + term | - term | OR term \}* \\
+\midrule
+term → factor \newline
+\quad |\ term * factor \newline
+\quad |\ term DIV factor \newline
+\quad |\ term MOD factor \newline
+\quad |\ term \& factor & term → factor \{ * factor | DIV factor | MOD factor | \& factor \}* \\
+\midrule
+declarations → ... \newline
+\quad |\ declarations proc\_decl ";" & declarations → ... \{ proc\_decl ";" \}* \newline
+\quad\quad（用 while 循环实现） \\
+\bottomrule
+\end{tabularx}
+\caption{左递归消除规则}
+\end{table}
+
+\subsection{提取左公因子}
+
+Oberon-0 文法已天然避免了大部分左公因子问题。唯一的潜在歧义是 statement 规则中 \texttt{IDENTIFIER} 既可能开始一个赋值语句，也可能开始一个过程调用。通过一个 token 的向前看（lookahead）区分：
+
+\begin{itemize}
+  \item \texttt{IDENTIFIER selectors ":=" expr} → 赋值语句
+  \item \texttt{IDENTIFIER selectors "(" params ")"} → 过程调用
+  \item \texttt{IDENTIFIER selectors}（后无 \texttt{:=} 或 \texttt{(}） → 无参过程调用
+\end{itemize}
+
+\section{翻译模式设计}
+
+翻译模式的核心思路：每个非终结符对应一个递归子程序，继承属性用形式参数传递，综合属性用返回值表示。
+
+\subsection{属性传递方案}
+
+\begin{table}[H]\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\textwidth}{>{\bfseries}P{3cm}>{\bfseries}P{2.3cm}>{\bfseries}P{2cm}>{\raggedright\arraybackslash}X}
+\toprule
+非终结符 & 继承属性 & 综合属性 & 语义动作 \\
+\midrule
+module & — & Module 对象 & 创建 Module，依次添加 Procedure \\
+procedure\_decl & Module & — & 创建 Procedure，注册到 Module \\
+statement\_seq & Proc./StmtSeq & — & 按序解析 statements \\
+if\_statement & — & IfStatement 对象 & 创建 IfStmt，递归填充分支 \\
+while\_statement & — & WhileStmt 对象 & 创建 WhileStmt，递归填充循环体 \\
+expression & — & String（文本） & 重建表达式文本用于流程图显示 \\
+\bottomrule
+\end{tabularx}
+\caption{核心非终结符的属性传递方案}
+\end{table}
+
+\subsection{递归子程序映射}
+
+\begin{table}[H]\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\textwidth}{>{\bfseries}P{3.5cm}>{\raggedright\arraybackslash}X}
+\toprule
+文法非终结符 & 递归子程序方法 \\
+\midrule
+module & \texttt{parseModule()} \\
+declarations & \texttt{parseDeclarations()} \\
+procedure\_declaration & \texttt{parseProcedureDeclaration()} \\
+statement\_sequence & \texttt{parseStatementSequence(Procedure)} \\
+statement & \texttt{parseStatementCommon(Object\ container)} \\
+if\_statement & \texttt{parseIfStatement(Procedure)} \\
+while\_statement & \texttt{parseWhileStatement(Procedure)} \\
+expression & \texttt{parseExpressionText()\ →\ String} \\
+simple\_expression & \texttt{while} 循环调用 \texttt{parseTermText()} \\
+term & \texttt{while} 循环调用 \texttt{parseFactorText()} \\
+factor & \texttt{parseFactorText()\ →\ String} \\
+type & \texttt{parseType()\ →\ String} \\
+\bottomrule
+\end{tabularx}
+\caption{完整递归子程序映射（12 个方法）}
+\end{table}
+
+\subsection{流程图生成嵌入}
+
+语义动作在解析过程中直接调用 ROSE Flowchart API：
+
+{\raggedright
+\begin{itemize}
+  \item 赋值/过程调用 → \texttt{add(new\ PrimitiveStatement(text))}
+  \item IF 语句 → \texttt{IfStatement(condition)} → 递归填充 \texttt{getTrueBody()\ /\ getFalseBody()}
+  \item WHILE 语句 → \texttt{WhileStatement(condition)} → 递归填充 \texttt{getLoopBody()}
+  \item ELSIF 链 → 嵌套 IfStatement 到前一个 IF 的 false 分支
+\end{itemize}
+}
+
+\section{自顶向下 vs 自底向上——分析策略比较}
+
+通过实验三（JavaCUP / LALR）和实验四（递归下降）的亲身实践，对如下维度的体会：
+
+\begin{table}[H]\centering
+\begin{tabularx}{\textwidth}{>{\bfseries}P{2.8cm}YY}
+\toprule
+维度 & 递归下降（本实验） & LALR（实验三） \\
+\midrule
+分析方向 & 自顶向下 & 自底向上 \\
+简单性 & 直观，方法直接映射非终结符，调试时打断点即可跟踪 & 需理解分析表、状态机和移进/归约逻辑 \\
+通用性 & 需手工消除左递归，不能处理所有 CFG & 可处理 LR(1) 文法，更通用 \\
+语义动作 & 可在解析过程中任意位置嵌入 & 仅在产生式规约时执行 \\
+错误恢复 & 较易实现，方法级 panic-mode & 需特殊 error 产生式或分析表条目 \\
+分析速度 & O(n)，无表查找开销 & O(n)，有状态表查找开销 \\
+表格大小 & 无需分析表 & LR 分析表可能较大 \\
+\bottomrule
+\end{tabularx}
+\caption{六维对比}
+\end{table}
+
+具体体会：
+\begin{enumerate}
+  \item \textbf{流程图生成的语义动作在递归下降中更自然}——解析到 IF 关键字后可立即创建 IfStatement 对象，然后递归解析 true-branch 时直接向其中添加语句
+  \item \textbf{左递归消除是递归下降的额外成本}——但 Oberon-0 仅需处理表达式和声明列表 3 处，成本可控
+  \item \textbf{错误恢复在递归下降中更灵活}——可直接跳过当前输入直到同步符号（END、分号），不需额外设计
+  \item \textbf{LALR 的表驱动方式在文法演进时更鲁棒}——新增语法规则不一定需要修改现有规则的处理逻辑
+\end{enumerate}
+
+\end{document}

@@ -1,0 +1,7 @@
+(* ERROR: MissingOperatorException - missing operator between operands *)
+MODULE Sample;
+  VAR x, y: INTEGER;
+BEGIN
+  x := 5;
+  y := x 10
+END Sample.

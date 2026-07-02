@@ -1,0 +1,9 @@
+(* ERROR: TypeMismatchedException - INTEGER used in logical expression *)
+MODULE Sample;
+  VAR x, y: INTEGER;
+    flag: BOOLEAN;
+BEGIN
+  x := 5;
+  y := 10;
+  flag := x & TRUE
+END Sample.

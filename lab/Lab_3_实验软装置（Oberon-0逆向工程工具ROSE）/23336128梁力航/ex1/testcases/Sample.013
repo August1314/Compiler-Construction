@@ -1,0 +1,12 @@
+(* ERROR: ParameterMismatchedException - wrong number of arguments *)
+MODULE Sample;
+  VAR result: INTEGER;
+
+  PROCEDURE Add(a: INTEGER; b: INTEGER);
+  BEGIN
+    result := a + b
+  END Add;
+
+BEGIN
+  Add(5)
+END Sample.

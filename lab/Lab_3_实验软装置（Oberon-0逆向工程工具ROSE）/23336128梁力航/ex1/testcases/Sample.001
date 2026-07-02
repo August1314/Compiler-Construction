@@ -1,0 +1,6 @@
+(* ERROR: IllegalSymbolException - @ symbol is not valid in Oberon-0 *)
+MODULE Sample;
+  VAR x: INTEGER;
+BEGIN
+  x := 5 @ 3
+END Sample.

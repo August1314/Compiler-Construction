@@ -1,0 +1,6 @@
+(* ERROR: MismatchedCommentException - comment never closed *)
+MODULE Sample;
+  VAR x: INTEGER;
+BEGIN
+  x := 10 (* unclosed comment
+END Sample.

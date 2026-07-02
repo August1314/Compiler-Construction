@@ -1,0 +1,6 @@
+(* ERROR: MissingLeftParenthesisException - missing left parenthesis in expression *)
+MODULE Sample;
+  VAR x: INTEGER;
+BEGIN
+  x := 2 * 3 + 5)
+END Sample.

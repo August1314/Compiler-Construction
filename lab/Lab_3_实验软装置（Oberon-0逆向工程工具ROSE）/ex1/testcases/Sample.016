@@ -1,0 +1,6 @@
+(* ERROR: SemanticException - module name mismatch at END *)
+MODULE Sample;
+  VAR x: INTEGER;
+BEGIN
+  x := 100
+END WrongName.

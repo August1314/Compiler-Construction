@@ -1,0 +1,7 @@
+(* ERROR: MissingOperandException - missing operand for operator *)
+MODULE Sample;
+  VAR x: INTEGER;
+BEGIN
+  x := 5 + ;
+  Write(x)
+END Sample.

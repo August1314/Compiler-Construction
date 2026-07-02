@@ -1,0 +1,153 @@
+(*
+ * Sample.obr - A correct Oberon-0 source program covering ALL grammar constructs.
+ * This program demonstrates:
+ *   MODULE declaration with BEGIN/END body
+ *   CONST, TYPE, VAR declarations
+ *   PROCEDURE declarations with formal parameters (value + variable)
+ *   Assignment, procedure call, IF/ELSIF/ELSE, WHILE statements
+ *   Expressions: arithmetic (+, -, *, DIV, MOD), comparison (=, #, <, <=, >, >=)
+ *   Logical operators (&, OR, ~)
+ *   Array and record types with selectors (.field, [index])
+ *   Predefined functions: Read, Write, WriteLn
+ *
+ * Function: A simple bank account management system
+ *)
+MODULE Sample;
+  CONST
+    maxAccounts = 100;
+    bonusRate = 5;
+  TYPE
+    AccountRec = RECORD
+      id: INTEGER;
+      balance: INTEGER
+    END;
+    AccountList = ARRAY maxAccounts OF AccountRec;
+  VAR
+    accounts: AccountList;
+    totalBalance, count, i: INTEGER;
+    hasBonus: BOOLEAN;
+
+  (* Procedure with value parameters: compute the maximum of two integers *)
+  PROCEDURE Max(a: INTEGER; b: INTEGER);
+    VAR result: INTEGER;
+  BEGIN
+    IF a > b THEN
+      result := a
+    ELSE
+      result := b
+    END;
+    Write(result); WriteLn
+  END Max;
+
+  (* Procedure with variable parameter: deposit amount into an account *)
+  PROCEDURE Deposit(VAR acc: AccountRec; amount: INTEGER);
+  BEGIN
+    acc.balance := acc.balance + amount;
+    Write(acc.balance); WriteLn
+  END Deposit;
+
+  (* Procedure with variable parameter: withdraw from an account *)
+  PROCEDURE Withdraw(VAR acc: AccountRec; amount: INTEGER);
+  BEGIN
+    IF acc.balance >= amount THEN
+      acc.balance := acc.balance - amount;
+      Write(acc.balance)
+    ELSE
+      Write(0)
+    END;
+    WriteLn
+  END Withdraw;
+
+  (* Procedure that uses WHILE, IF/THEN/ELSIF/ELSE, array access *)
+  PROCEDURE Summarize;
+    VAR k, temp: INTEGER;
+  BEGIN
+    totalBalance := 0;
+    count := 0;
+    k := 0;
+    WHILE k < maxAccounts DO
+      temp := accounts[k].balance;
+      IF temp > 0 THEN
+        totalBalance := totalBalance + temp;
+        count := count + 1
+      ELSIF temp = 0 THEN
+        count := count + 1
+      ELSE
+        Write(0)
+      END;
+      k := k + 1
+    END;
+    Write(totalBalance); Write(count); WriteLn
+  END Summarize;
+
+  (* Procedure demonstrating logical operators (&, OR, ~) *)
+  PROCEDURE CheckBonus(VAR ok: BOOLEAN; minBal: INTEGER);
+    VAR j: INTEGER;
+  BEGIN
+    j := 0;
+    ok := TRUE;
+    WHILE (j < maxAccounts) & ok DO
+      ok := accounts[j].balance >= minBal;
+      j := j + 1
+    END;
+    (* Demonstrate OR: ok is TRUE if all accounts >= minBal OR no accounts *)
+    ok := ok OR (j = 0);
+    Write(j); WriteLn
+  END CheckBonus;
+
+  (* Procedure with unary operators and MOD *)
+  PROCEDURE ComputeAverage(VAR avg: INTEGER);
+    VAR sum, cnt: INTEGER;
+  BEGIN
+    sum := 0;
+    cnt := 0;
+    i := 0;
+    WHILE i < maxAccounts DO
+      IF accounts[i].balance > 0 THEN
+        sum := sum + accounts[i].balance;
+        cnt := cnt + 1
+      END;
+      i := i + 1
+    END;
+    IF cnt > 0 THEN
+      avg := sum DIV cnt
+    ELSE
+      avg := 0
+    END;
+    Write(avg); WriteLn
+  END ComputeAverage;
+
+  (* Procedure showing NOT operator and # comparison *)
+  PROCEDURE IsEmpty(VAR empty: BOOLEAN);
+    VAR m: INTEGER;
+  BEGIN
+    empty := TRUE;
+    m := 0;
+    WHILE (m < maxAccounts) & empty DO
+      empty := accounts[m].balance = 0;
+      m := m + 1
+    END;
+    empty := ~empty
+  END IsEmpty;
+
+BEGIN
+  (* Demonstrate Read (predefined procedure) *)
+  Read(i);
+
+  (* Initialize accounts *)
+  i := 0;
+  WHILE i < maxAccounts DO
+    accounts[i].id := i + 1;
+    accounts[i].balance := i * bonusRate;
+    i := i + 1
+  END;
+
+  (* Test procedures *)
+  Max(10, 20);
+  Deposit(accounts[0], 100);
+  Withdraw(accounts[1], 10);
+  Summarize;
+  CheckBonus(hasBonus, 10);
+  ComputeAverage(totalBalance);
+  IsEmpty(hasBonus)
+END Sample.

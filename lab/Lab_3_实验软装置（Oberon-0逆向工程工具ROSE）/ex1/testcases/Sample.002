@@ -1,0 +1,6 @@
+(* ERROR: IllegalIntegerException - no space between integer constant and identifier *)
+MODULE Sample;
+  VAR x: INTEGER;
+BEGIN
+  x := 25id + 1
+END Sample.

@@ -1,0 +1,6 @@
+(* ERROR: IllegalIdentifierLengthException - identifier longer than 24 characters *)
+MODULE Sample;
+  VAR thisIsAVeryLongIdentifierThatExceedsTheMaximumAllowedLength: INTEGER;
+BEGIN
+  thisIsAVeryLongIdentifierThatExceedsTheMaximumAllowedLength := 100
+END Sample.

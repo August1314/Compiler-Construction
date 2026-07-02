@@ -1,0 +1,6 @@
+(* ERROR: IllegalIntegerRangeException - integer exceeds max 12 digits *)
+MODULE Sample;
+  VAR x: INTEGER;
+BEGIN
+  x := 1234567890123
+END Sample.

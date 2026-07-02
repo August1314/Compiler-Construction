@@ -1,0 +1,370 @@
+/**
+ * JavaCUP input specification for Oberon-0 language.
+ *
+ * This file defines the context-free grammar of Oberon-0 in JavaCUP format
+ * with syntax-directed translation actions that generate a Call Graph.
+ *
+ * Usage: java -jar java-cup-11b.jar oberon.cup
+ *
+ * @author Lianglihang
+ * @version 1.00
+ */
+
+// --- Imports for generated parser ---
+import java_cup.runtime.*;
+import callgraph.*;
+import java.util.*;
+import java.io.*;
+
+// --- Parser configuration ---
+parser code {:
+  /**
+   * The call graph being constructed during parsing.
+   */
+  private CallGraph callGraph;
+
+  /**
+   * Set of all procedure names declared in current module.
+   */
+  private Set<String> declaredProcedures = new HashSet<String>();
+
+  /**
+   * Current procedure name being parsed (used for call site context).
+   */
+  private String currentProcedure = null;
+
+  /**
+   * Call site counter for unique IDs.
+   */
+  private int callSiteCounter = 0;
+
+  /**
+   * Returns the constructed call graph.
+   */
+  public CallGraph getCallGraph() {
+    return callGraph;
+  }
+
+  /**
+   * Reports a syntactic error at the current position.
+   */
+  public void report_error(String message, Object info) {
+    System.err.println("Syntax error: " + message);
+  }
+
+  /**
+   * Reports a fatal error.
+   */
+  public void report_fatal_error(String message, Object info) throws Exception {
+    throw new Exception("Fatal syntax error: " + message);
+  }
+:};
+
+// --- Terminal symbols (tokens) ---
+terminal            MODULE, BEGIN, END, CONST, TYPE, VAR, PROCEDURE;
+terminal            IF, THEN, ELSIF, ELSE, WHILE, DO;
+terminal            ARRAY, OF, RECORD;
+terminal            DIV, MODOP, OR;
+// INTEGER, BOOLEAN, TRUE, FALSE are keywords (predefined identifiers)
+// in Oberon-0, returned as IDENTIFIER by the scanner. The parser
+// handles them contextually in type declarations and expressions.
+terminal            READ, WRITE, WRITELN;
+terminal String     IDENTIFIER;
+terminal Integer    INTEGER_LITERAL;
+terminal            ASSIGN, EQ, NE, LT, LE, GT, GE;
+terminal            PLUS, MINUS, STAR, AND, NOT;
+terminal            SEMICOLON, DOT, COMMA, LPAREN, RPAREN;
+terminal            LBRACKET, RBRACKET, COLON;
+
+// --- Non-terminal symbols ---
+non terminal            module, declarations, procedure_declaration;
+non terminal            procedure_heading, procedure_body, formal_parameters;
+non terminal            fp_section, type, record_type, array_type;
+non terminal            identifier_list, statement_sequence, statement;
+non terminal            while_statement, if_statement, procedure_call;
+non terminal            actual_parameters, assignment, expression;
+non terminal            simple_expression, term, factor, selector;
+non terminal Integer    number;
+non terminal String     identifier;
+
+// --- Precedence rules (lowest to highest) ---
+precedence left OR;
+precedence left AND;
+precedence left EQ, NE, LT, LE, GT, GE;
+precedence left PLUS, MINUS;
+precedence left STAR, DIV, MODOP;
+precedence right NOT, UNARY_MINUS;
+
+// --- Grammar rules with semantic actions ---
+
+start with module;
+
+module ::=
+  MODULE identifier:id SEMICOLON
+    {:
+      callGraph = new CallGraph();
+      callGraph.addProcedure(id, id + " (module)");
+      declaredProcedures.add(id);
+    :}
+  declarations
+  BEGIN
+  statement_sequence
+  END identifier:id2 DOT
+    {:
+      if (!id.equals(id2)) {
+        System.err.println("Warning: Module name mismatch: " + id + " vs " + id2);
+      }
+      callGraph.show();
+    :}
+  ;
+
+identifier ::=
+  IDENTIFIER:id
+    {: RESULT = id; :}
+  ;
+
+declarations ::=
+  /* empty */
+  |
+  CONST constant_declarations
+  |
+  TYPE type_declarations
+  |
+  VAR variable_declarations
+  |
+  CONST constant_declarations TYPE type_declarations
+  |
+  CONST constant_declarations VAR variable_declarations
+  |
+  TYPE type_declarations VAR variable_declarations
+  |
+  CONST constant_declarations TYPE type_declarations VAR variable_declarations
+  |
+  procedure_declaration SEMICOLON declarations
+  ;
+
+constant_declarations ::=
+  identifier:id EQ expression SEMICOLON
+  |
+  constant_declarations identifier:id EQ expression SEMICOLON
+  ;
+
+type_declarations ::=
+  identifier:id EQ type SEMICOLON
+  |
+  type_declarations identifier:id EQ type SEMICOLON
+  ;
+
+variable_declarations ::=
+  identifier_list COLON type SEMICOLON
+  |
+  variable_declarations identifier_list COLON type SEMICOLON
+  ;
+
+procedure_declaration ::=
+  procedure_heading SEMICOLON procedure_body
+  ;
+
+procedure_heading ::=
+  PROCEDURE identifier:id
+    {:
+      currentProcedure = id;
+      callGraph.addProcedure(id, id);
+      declaredProcedures.add(id);
+    :}
+  formal_parameters
+  ;
+
+procedure_body ::=
+  declarations
+  BEGIN
+  statement_sequence
+  END identifier:id
+    {: currentProcedure = null; :}
+  ;
+
+formal_parameters ::=
+  /* empty */
+  |
+  LPAREN fp_section_list RPAREN
+  ;
+
+fp_section_list ::=
+  fp_section
+  |
+  fp_section_list SEMICOLON fp_section
+  ;
+
+fp_section ::=
+  identifier_list COLON type
+  |
+  VAR identifier_list COLON type
+  ;
+
+type ::=
+  identifier
+  |
+  array_type
+  |
+  record_type
+  ;
+
+record_type ::=
+  RECORD field_list SEMICOLON_list END
+  ;
+
+field_list ::=
+  /* empty */
+  |
+  identifier_list COLON type
+  ;
+
+SEMICOLON_list ::=
+  /* empty */
+  |
+  SEMICOLON_list SEMICOLON field_list
+  ;
+
+array_type ::=
+  ARRAY expression OF type
+  ;
+
+identifier_list ::=
+  identifier
+  |
+  identifier_list COMMA identifier
+  ;
+
+statement_sequence ::=
+  statement
+  |
+  statement_sequence SEMICOLON statement
+  ;
+
+statement ::=
+  /* empty */
+  |
+  assignment
+  |
+  procedure_call
+  |
+  if_statement
+  |
+  while_statement
+  ;
+
+while_statement ::=
+  WHILE expression DO statement_sequence END
+  ;
+
+if_statement ::=
+  IF expression THEN statement_sequence
+  elsif_clauses
+  else_clause
+  END
+  ;
+
+elsif_clauses ::=
+  /* empty */
+  |
+  elsif_clauses ELSIF expression THEN statement_sequence
+  ;
+
+else_clause ::=
+  /* empty */
+  |
+  ELSE statement_sequence
+  ;
+
+procedure_call ::=
+  identifier:id
+    {:
+      if (currentProcedure != null && declaredProcedures.contains(id)) {
+        String callSiteId = "cs" + (++callSiteCounter);
+        callGraph.addCallSite(callSiteId, currentProcedure, id + "(...)");
+        callGraph.addEdge(callSiteId, id);
+      }
+    :}
+  actual_parameters
+  ;
+
+actual_parameters ::=
+  /* empty */
+  |
+  LPAREN expression_list RPAREN
+  ;
+
+expression_list ::=
+  expression
+  |
+  expression_list COMMA expression
+  ;
+
+assignment ::=
+  identifier selector ASSIGN expression
+  ;
+
+expression ::=
+  simple_expression
+  |
+  simple_expression EQ simple_expression
+  |
+  simple_expression NE simple_expression
+  |
+  simple_expression LT simple_expression
+  |
+  simple_expression LE simple_expression
+  |
+  simple_expression GT simple_expression
+  |
+  simple_expression GE simple_expression
+  ;
+
+simple_expression ::=
+  term
+  |
+  PLUS term             {: RESULT = RESULT; :}
+  |
+  MINUS term            {: RESULT = RESULT; :}  %prec UNARY_MINUS
+  |
+  simple_expression PLUS term
+  |
+  simple_expression MINUS term
+  |
+  simple_expression OR term
+  ;
+
+term ::=
+  factor
+  |
+  term STAR factor
+  |
+  term DIV factor
+  |
+  term MODOP factor
+  |
+  term AND factor
+  ;
+
+factor ::=
+  identifier selector
+  |
+  number
+  |
+  LPAREN expression RPAREN
+  |
+  NOT factor
+  ;
+
+selector ::=
+  /* empty */
+  |
+  selector DOT identifier
+  |
+  selector LBRACKET expression RBRACKET
+  ;
+
+number ::=
+  INTEGER_LITERAL:n
+    {: RESULT = n; :}
+  ;

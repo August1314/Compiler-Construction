@@ -1,0 +1,8 @@
+(* ERROR: SyntacticException - missing END for WHILE statement *)
+MODULE Sample;
+  VAR x: INTEGER;
+BEGIN
+  x := 0;
+  WHILE x < 10 DO
+    x := x + 1
+END Sample.

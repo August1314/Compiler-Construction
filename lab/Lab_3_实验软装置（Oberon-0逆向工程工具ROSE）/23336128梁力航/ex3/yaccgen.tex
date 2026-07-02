@@ -1,0 +1,120 @@
+\documentclass[12pt,a4paper,fontset=none]{ctexart}
+\usepackage[a4paper,margin=1.7cm]{geometry}
+\usepackage{fontspec,array,booktabs,tabularx}
+\usepackage{enumitem,fancyhdr,float,hyperref}
+\usepackage[most]{tcolorbox}
+\usepackage{xcolor}
+
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue}
+\setmainfont{Times New Roman}\setsansfont{Arial}\setmonofont{Menlo}
+\setCJKmainfont{Songti SC}\setCJKsansfont{Heiti SC}\setCJKmonofont{Songti SC}
+\setlength{\emergencystretch}{1.5em}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{ROSE 实验三}
+\fancyhead[R]{JavaCUP 与 GNU Bison 差异比较}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{15pt}
+\setlist[itemize]{leftmargin=1.8em,itemsep=0.25em}
+\renewcommand{\arraystretch}{1.22}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\definecolor{accenttwo}{HTML}{0F4C81}
+\definecolor{softb}{HTML}{E8F0F7}
+\definecolor{linegray}{HTML}{D7CEC5}
+\definecolor{boxbg}{HTML}{FCFAF7}
+
+\newtcolorbox{plainBox}{enhanced,colback=boxbg,colframe=linegray,boxrule=0.7pt,arc=1.2mm,left=2.3mm,right=2.3mm,top=1.8mm,bottom=1.8mm,before upper=\raggedright}
+
+\title{JavaCUP 与 GNU Bison 差异比较}
+\author{梁力航\quad 23336128}
+\date{2026年5月20日}
+
+\begin{document}
+\maketitle
+
+\begin{plainBox}
+本文档对应 ROSE 项目实验三的提交要求：讨论 JavaCUP 和 GNU Bison 两种 yacc 族工具在语法规则定义方面的差异，并扼要指出 JavaCC 与 JavaCUP 的最核心区别。
+\end{plainBox}
+
+\section{JavaCUP 与 GNU Bison 语法规则定义差异}
+
+\subsection{输入文件格式}
+
+\begin{table}[H]\centering
+\begin{tabularx}{\textwidth}{>{\bfseries}P{3cm}Y>{\bfseries}P{3cm}Y}
+\toprule
+\multicolumn{2}{c}{\textbf{JavaCUP（.cup 文件）}} & \multicolumn{2}{c}{\textbf{GNU Bison（.y 文件）}} \\
+\midrule
+终结符声明 & \texttt{terminal SYM1, SYM2;} & \texttt{\%token SYM1 SYM2} \\
+非终结符声明 & \texttt{non terminal NT;} & 无需显式声明 \\
+开始符号 & \texttt{start with symbol;} & \texttt{\%start symbol} \\
+优先级 & \texttt{precedence left PLUS;} & \texttt{\%left PLUS} \\
+类型标注 & \texttt{terminal String ID;} & \texttt{\%type <str> ID}（配合 \%union） \\
+嵌入代码 & \texttt{parser code \{: ... :\};} & \texttt{\%\{ ... \%\}} \\
+语义动作语法 & \texttt{\{: ... :\}} & \texttt{\{ ... \}} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{语义动作中符号属性的引用方式}
+
+这是两个工具最显著的差异。
+
+\textbf{JavaCUP} 使用命名标签引用产生式右侧符号：
+
+\begin{verbatim}
+expression ::= expression:left PLUS expression:right
+  {: RESULT = left + right; :}
+\end{verbatim}
+
+\textbf{GNU Bison} 使用位置编号 \texttt{\$1, \$2, ...} 引用：
+
+\begin{verbatim}
+expression: expression PLUS expression
+  { $$ = $1 + $3; }
+\end{verbatim}
+
+JavaCUP 的命名标签在长规则中可读性更好——当产生式右侧有 8--10 个符号时，\texttt{\$7} 容易对应错误，而 \texttt{identifier:id} 则一目了然。
+
+\subsection{类型系统}
+
+\begin{itemize}
+  \item \textbf{JavaCUP}：每个非终结符和带类型的终结符单独声明类型
+  \item \textbf{GNU Bison}：通过 \texttt{\%union} 定义所有可能的属性类型，再用 \texttt{\%type} 为各符号指定联合体字段名
+\end{itemize}
+
+\subsection{生成文件}
+
+\begin{itemize}
+  \item \textbf{JavaCUP}：生成 \texttt{Parser.java}（语法分析器）和 \texttt{sym.java}（终结符常量）
+  \item \textbf{GNU Bison}：生成 \texttt{*.tab.c}（语法分析器）和 \texttt{*.tab.h}（终结符常量，可选）
+\end{itemize}
+
+\subsection{平台与生态}
+
+\begin{itemize}
+  \item \textbf{JavaCUP}：纯 Java 实现，与 JFlex 通过 \texttt{\%cup} 指令直接集成，Scanner 返回 \texttt{Symbol} 对象
+  \item \textbf{GNU Bison}：C/C++ 实现，与 GNU Flex 通过 \texttt{YYSTYPE} 联合体集成
+\end{itemize}
+
+\section{JavaCC 与 JavaCUP 的最核心区别}
+
+\textbf{JavaCC 生成的是递归下降（自顶向下）的 LL(k) 解析器，JavaCUP 生成的是移进/归约（自底向上）的 LALR(1) 解析器。}
+
+具体差异：
+\begin{itemize}
+  \item \textbf{JavaCC}：将 EBNF 语法规则直接转换为递归函数调用，语义动作可嵌入在规则的任意位置。更接近手写递归下降的体验
+  \item \textbf{JavaCUP}：将语法规则转换为 LALR 分析表，语义动作只能在产生式规约时执行。适合处理更大类的上下文无关文法
+\end{itemize}
+
+\section{实际使用体会}
+
+\begin{enumerate}
+  \item 命名标签（JavaCUP）优于位置编号（Bison），这在 Oberon-0 较复杂的 module 规则中特别明显
+  \item Java 的类型系统在编译期提供类型安全保证——如果在 cup 文件中声明了 \texttt{terminal String ID;}，生成代码中类型不匹配会直接编译失败
+  \item JavaCUP 的冲突报告（shift/reduce, reduce/reduce）格式与经典 yacc 一致，可直接借鉴 yacc 的冲突解决经验
+  \item 与 JFlex 的集成是 Java 生态的优势——两个工具共享 \texttt{Symbol} 类型，无需手动桥接
+\end{enumerate}
+
+\end{document}

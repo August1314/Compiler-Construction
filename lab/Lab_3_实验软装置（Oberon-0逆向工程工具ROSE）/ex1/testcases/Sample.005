@@ -1,0 +1,6 @@
+(* ERROR: IllegalOctalException - octal constant contains digit 8 *)
+MODULE Sample;
+  VAR x: INTEGER;
+BEGIN
+  x := 018
+END Sample.
